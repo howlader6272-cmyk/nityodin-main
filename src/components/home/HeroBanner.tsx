@@ -31,6 +31,20 @@ const HeroBanner = () => {
     },
   });
 
+  const { data: heroBanners } = useQuery({
+    queryKey: ["hero-banners-active"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("banners")
+        .select("*")
+        .eq("is_active", true)
+        .eq("position", "hero")
+        .order("sort_order", { ascending: true });
+      if (error) throw error;
+      return data as any[] | null;
+    },
+  });
+
   const banners: Banner[] = useMemo(() => {
     const title = siteConfig?.hero_title || "";
     const subtitle = siteConfig?.hero_subtitle || "";
@@ -52,6 +66,19 @@ const HeroBanner = () => {
       return fromHeroImages;
     }
 
+    const fromHeroBanners: Banner[] =
+      heroBanners?.map((b: any) => ({
+        id: b.id,
+        title_bn: b.title_bn || b.title || title,
+        subtitle_bn: b.subtitle_bn || b.subtitle || subtitle,
+        image_url: b.image_url,
+        link_url: b.link_url || link,
+      })) ?? [];
+
+    if (fromHeroBanners.length > 0) {
+      return fromHeroBanners;
+    }
+
     if (!siteConfig || !siteConfig.hero_image_url) {
       return [];
     }
@@ -65,7 +92,7 @@ const HeroBanner = () => {
         link_url: link,
       },
     ];
-  }, [heroImages, siteConfig]);
+  }, [heroImages, heroBanners, siteConfig]);
 
   const hasMultipleSlides = banners.length > 1;
 
