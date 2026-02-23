@@ -430,8 +430,8 @@ const AdminGeneralSettings = () => {
       </div>
 
       <Tabs defaultValue="branding" className="space-y-6">
-        <div className="overflow-x-auto -mx-1 px-1">
-          <TabsList className="flex w-max gap-2 sm:w-full sm:grid sm:grid-cols-3 md:w-auto md:inline-flex">
+        <div className="-mx-1 px-1">
+          <TabsList className="grid w-full grid-cols-2 gap-2 sm:grid-cols-3 md:w-auto md:inline-flex">
             <TabsTrigger value="branding" className="whitespace-nowrap">
               Branding & SEO
             </TabsTrigger>
