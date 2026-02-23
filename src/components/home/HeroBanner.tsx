@@ -15,6 +15,7 @@ interface Banner {
   focus_x?: number | null;
   focus_y?: number | null;
   zoom?: number | null;
+  cta_text?: string | null;
 }
 
 const HeroBanner = () => {
@@ -36,6 +37,8 @@ const HeroBanner = () => {
         focus_x: number | null;
         focus_y: number | null;
         zoom: number | null;
+        cta_text: string | null;
+        cta_link: string | null;
       }[] | null;
     },
   });
@@ -67,10 +70,11 @@ const HeroBanner = () => {
           title_bn: title,
           subtitle_bn: subtitle,
           image_url: data.publicUrl,
-          link_url: link,
+          link_url: img.cta_link || link,
           focus_x: img.focus_x,
           focus_y: img.focus_y,
           zoom: img.zoom,
+          cta_text: img.cta_text,
         };
       }) ?? [];
 
@@ -81,6 +85,10 @@ const HeroBanner = () => {
         subtitle_bn: b.subtitle_bn || b.subtitle || subtitle,
         image_url: b.image_url,
         link_url: b.link_url || link,
+        focus_x: b.focus_x ?? 50,
+        focus_y: b.focus_y ?? 50,
+        zoom: b.zoom ?? 1,
+        cta_text: siteConfig?.cta_text ?? null,
       })) ?? [];
 
     const combined = [...fromHeroImages, ...fromHeroBanners];
@@ -100,6 +108,7 @@ const HeroBanner = () => {
         subtitle_bn: subtitle,
         image_url: siteConfig.hero_image_url,
         link_url: link,
+        cta_text: siteConfig.cta_text ?? null,
       },
     ];
   }, [heroImages, heroBanners, siteConfig]);
@@ -166,7 +175,7 @@ const HeroBanner = () => {
                 {banner.link_url && (
                   <Link to={banner.link_url}>
                     <Button size="lg" className="mt-4 bg-accent hover:bg-accent/90 text-accent-foreground shadow-hover">
-                      {siteConfig?.cta_text || "এখনই কিনুন"}
+                      {banner.cta_text || siteConfig?.cta_text || "এখনই কিনুন"}
                     </Button>
                   </Link>
                 )}

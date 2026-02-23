@@ -58,6 +58,8 @@ interface HeroImage {
   focus_x?: number | null;
   focus_y?: number | null;
   zoom?: number | null;
+  cta_text?: string | null;
+  cta_link?: string | null;
 }
 
 const AdminGeneralSettings = () => {
@@ -106,6 +108,8 @@ const AdminGeneralSettings = () => {
   const [heroFocusY, setHeroFocusY] = useState(50);
   const [heroEditingImage, setHeroEditingImage] = useState<HeroImage | null>(null);
   const [heroZoom, setHeroZoom] = useState(1);
+  const [heroCtaText, setHeroCtaText] = useState("");
+  const [heroCtaLink, setHeroCtaLink] = useState("");
 
   const fetchHeroImages = async () => {
     setHeroLoading(true);
@@ -120,6 +124,36 @@ const AdminGeneralSettings = () => {
       setHeroImages((data || []) as HeroImage[]);
     }
     setHeroLoading(false);
+  };
+
+  const syncFallbackHeroToHeroImages = async (url: string) => {
+    if (!url) return;
+
+    const match = url.match(/\/storage\/v1\/object\/public\/site-assets\/(.+)$/);
+    const imagePath = match ? match[1] : url;
+
+    if (heroImages.some((img) => img.image_path === imagePath)) {
+      return;
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from("hero_images")
+        .insert({
+          image_path: imagePath,
+          is_active: true,
+          focus_x: 50,
+          focus_y: 50,
+          zoom: 1,
+        })
+        .select("*")
+        .single();
+      if (error) throw error;
+
+      setHeroImages((prev) => [data as HeroImage, ...prev]);
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   useEffect(() => {
@@ -146,6 +180,8 @@ const AdminGeneralSettings = () => {
     setHeroFocusX(50);
     setHeroFocusY(50);
     setHeroZoom(1);
+    setHeroCtaText("");
+    setHeroCtaLink("");
     setHeroEditingImage(null);
     setHeroCropOpen(true);
     event.target.value = "";
@@ -174,6 +210,8 @@ const AdminGeneralSettings = () => {
             focus_x: heroFocusX,
             focus_y: heroFocusY,
             zoom: heroZoom,
+            cta_text: heroCtaText || null,
+            cta_link: heroCtaLink || null,
           })
           .select("*")
           .single();
@@ -188,6 +226,8 @@ const AdminGeneralSettings = () => {
             focus_x: heroFocusX,
             focus_y: heroFocusY,
             zoom: heroZoom,
+            cta_text: heroCtaText || null,
+            cta_link: heroCtaLink || null,
           })
           .eq("id", heroEditingImage.id);
         if (error) throw error;
@@ -210,6 +250,8 @@ const AdminGeneralSettings = () => {
       setHeroCropFile(null);
       setHeroEditingImage(null);
       setHeroZoom(1);
+      setHeroCtaText("");
+      setHeroCtaLink("");
     } catch (error) {
       console.error(error);
       const message =
@@ -331,12 +373,18 @@ const AdminGeneralSettings = () => {
     setTestimonials((prev) => prev.filter((_, i) => i !== index));
   };
   const handleSave = async () => {
+    const previousHeroUrl = siteConfig?.hero_image_url || "";
+
     await updateSiteConfig.mutateAsync({
       id: siteConfig?.id,
       ...form,
       countdown_end: form.countdown_end || null,
       testimonial_json: testimonials,
     });
+
+    if (form.hero_image_url && form.hero_image_url !== previousHeroUrl) {
+      await syncFallbackHeroToHeroImages(form.hero_image_url);
+    }
   };
 
   if (isLoading) {
@@ -651,6 +699,21 @@ const AdminGeneralSettings = () => {
                         onValueChange={([value]) => setHeroZoom(value)}
                       />
                     </div>
+                    <div className="space-y-2">
+                      <Label>CTA Text (optional)</Label>
+                      <Input
+                        value={heroCtaText}
+                        onChange={(e) => setHeroCtaText(e.target.value)}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>CTA Link (optional)</Label>
+                      <Input
+                        value={heroCtaLink}
+                        onChange={(e) => setHeroCtaLink(e.target.value)}
+                        placeholder="https://"
+                      />
+                    </div>
                   </div>
                   <DialogFooter className="mt-4">
                     <Button
@@ -665,6 +728,8 @@ const AdminGeneralSettings = () => {
                         setHeroCropFile(null);
                         setHeroEditingImage(null);
                         setHeroZoom(1);
+                        setHeroCtaText("");
+                        setHeroCtaLink("");
                       }}
                     >
                       বাতিল
@@ -742,27 +807,89 @@ const AdminGeneralSettings = () => {
                           Crop / Position edit করুন
                         </div>
                       </button>
-                      <div className="flex items-center justify-between px-2 py-2 border-t bg-background/80">
-                        <div className="flex items-center gap-2">
-                          <Switch
-                            checked={!!image.is_active}
-                            onCheckedChange={(v) =>
-                              handleHeroToggle(image.id, v)
-                            }
-                          />
-                          <span className="text-xs text-muted-foreground">
-                            {image.is_active ? "Active" : "Inactive"}
-                          </span>
+                      <div className="px-2 py-2 border-t bg-background/80 space-y-2">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <Switch
+                              checked={!!image.is_active}
+                              onCheckedChange={(v) =>
+                                handleHeroToggle(image.id, v)
+                              }
+                            />
+                            <span className="text-xs text-muted-foreground">
+                              {image.is_active ? "Active" : "Inactive"}
+                            </span>
+                          </div>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="text-destructive"
+                            onClick={() => handleHeroDelete(image)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
                         </div>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon"
-                          className="text-destructive"
-                          onClick={() => handleHeroDelete(image)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
+                        <div className="space-y-1">
+                          <Label className="text-xs">CTA Text</Label>
+                          <Input
+                            value={image.cta_text ?? ""}
+                            onChange={(e) => {
+                              const value = e.target.value;
+                              setHeroImages((prev) =>
+                                prev.map((img) =>
+                                  img.id === image.id ? { ...img, cta_text: value } : img,
+                                ),
+                              );
+                            }}
+                            onBlur={async (e) => {
+                              const value = e.target.value;
+                              if (value === (image.cta_text ?? "")) return;
+                              try {
+                                const { error } = await supabase
+                                  .from("hero_images")
+                                  .update({ cta_text: value || null })
+                                  .eq("id", image.id);
+                                if (error) throw error;
+                              } catch (error) {
+                                console.error(error);
+                                toast.error("CTA text সংরক্ষণ করা যায়নি");
+                              }
+                            }}
+                            placeholder="যেমন: এখনই কিনুন"
+                            className="h-7 text-xs"
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-xs">CTA Link</Label>
+                          <Input
+                            value={image.cta_link ?? ""}
+                            onChange={(e) => {
+                              const value = e.target.value;
+                              setHeroImages((prev) =>
+                                prev.map((img) =>
+                                  img.id === image.id ? { ...img, cta_link: value } : img,
+                                ),
+                              );
+                            }}
+                            onBlur={async (e) => {
+                              const value = e.target.value;
+                              if (value === (image.cta_link ?? "")) return;
+                              try {
+                                const { error } = await supabase
+                                  .from("hero_images")
+                                  .update({ cta_link: value || null })
+                                  .eq("id", image.id);
+                                if (error) throw error;
+                              } catch (error) {
+                                console.error(error);
+                                toast.error("CTA link সংরক্ষণ করা যায়নি");
+                              }
+                            }}
+                            placeholder="https://"
+                            className="h-7 text-xs"
+                          />
+                        </div>
                       </div>
                     </div>
                   ))}

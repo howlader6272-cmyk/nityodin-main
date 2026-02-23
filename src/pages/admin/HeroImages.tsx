@@ -8,6 +8,8 @@ import { toast } from "sonner";
 import { Trash2, Upload } from "lucide-react";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Slider } from "@/components/ui/slider";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 interface HeroImage {
   id: string;
@@ -16,6 +18,8 @@ interface HeroImage {
   focus_x?: number | null;
   focus_y?: number | null;
   zoom?: number | null;
+  cta_text?: string | null;
+  cta_link?: string | null;
 }
 
 const AdminHeroImages = () => {
@@ -28,6 +32,8 @@ const AdminHeroImages = () => {
   const [focusY, setFocusY] = useState(50);
   const [editingImage, setEditingImage] = useState<HeroImage | null>(null);
   const [zoom, setZoom] = useState(1);
+  const [ctaText, setCtaText] = useState("");
+  const [ctaLink, setCtaLink] = useState("");
 
   const { data: images, isLoading } = useQuery({
     queryKey: ["hero-images"],
@@ -96,6 +102,8 @@ const AdminHeroImages = () => {
     setFocusX(50);
     setFocusY(50);
     setZoom(1);
+    setCtaText("");
+    setCtaLink("");
     setEditingImage(null);
     setCropOpen(true);
     event.target.value = "";
@@ -116,7 +124,7 @@ const AdminHeroImages = () => {
           .upload(fileName, cropFile);
         if (uploadError) throw uploadError;
 
-        const { error } = await supabase
+        const { data, error } = await supabase
           .from("hero_images")
           .insert({
             image_path: fileName,
@@ -124,8 +132,17 @@ const AdminHeroImages = () => {
             focus_x: focusX,
             focus_y: focusY,
             zoom,
-          });
+            cta_text: ctaText || null,
+            cta_link: ctaLink || null,
+          })
+          .select("*")
+          .single();
         if (error) throw error;
+
+        queryClient.setQueryData(
+          { queryKey: ["hero-images"] },
+          (prev: HeroImage[] | undefined) => [data as HeroImage, ...(prev ?? [])],
+        );
 
         toast.success("হিরো ছবি আপলোড হয়েছে");
       } else if (editingImage) {
@@ -135,14 +152,22 @@ const AdminHeroImages = () => {
             focus_x: focusX,
             focus_y: focusY,
             zoom,
+            cta_text: ctaText || null,
+            cta_link: ctaLink || null,
           })
           .eq("id", editingImage.id);
         if (error) throw error;
 
+        queryClient.setQueryData(
+          { queryKey: ["hero-images"] },
+          (prev: HeroImage[] | undefined) =>
+            (prev ?? []).map((img) =>
+              img.id === editingImage.id ? { ...img, focus_x: focusX, focus_y: focusY, zoom } : img,
+            ),
+        );
+
         toast.success("হিরো ছবির crop আপডেট হয়েছে");
       }
-
-      queryClient.invalidateQueries({ queryKey: ["hero-images"] });
       setCropOpen(false);
       if (cropPreview) {
         URL.revokeObjectURL(cropPreview);
@@ -151,6 +176,8 @@ const AdminHeroImages = () => {
       setCropFile(null);
       setEditingImage(null);
       setZoom(1);
+      setCtaText("");
+      setCtaLink("");
     } catch (error) {
       console.error(error);
       toast.error("ছবি আপলোড করা যায়নি");
@@ -223,6 +250,18 @@ const AdminHeroImages = () => {
                     onValueChange={([value]) => setZoom(value)}
                   />
                 </div>
+                <div className="space-y-2">
+                  <Label>CTA Text (optional)</Label>
+                  <Input value={ctaText} onChange={(e) => setCtaText(e.target.value)} />
+                </div>
+                <div className="space-y-2">
+                  <Label>CTA Link (optional)</Label>
+                  <Input
+                    value={ctaLink}
+                    onChange={(e) => setCtaLink(e.target.value)}
+                    placeholder="https://"
+                  />
+                </div>
               </div>
               <DialogFooter className="mt-4">
                 <Button
@@ -237,6 +276,8 @@ const AdminHeroImages = () => {
                     setCropFile(null);
                     setEditingImage(null);
                     setZoom(1);
+                    setCtaText("");
+                    setCtaLink("");
                   }}
                 >
                   বাতিল
@@ -297,6 +338,8 @@ const AdminHeroImages = () => {
                           setFocusX(image.focus_x ?? 50);
                           setFocusY(image.focus_y ?? 50);
                           setZoom(image.zoom ?? 1);
+                          setCtaText(image.cta_text ?? "");
+                          setCtaLink(image.cta_link ?? "");
                           setEditingImage(image);
                           setCropOpen(true);
                         }}

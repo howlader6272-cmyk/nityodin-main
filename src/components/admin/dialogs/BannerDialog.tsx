@@ -16,6 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Slider } from "@/components/ui/slider";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
@@ -39,6 +40,9 @@ export const BannerDialog = ({ open, onOpenChange, banner }: BannerDialogProps) 
     position: "hero",
     sort_order: "0",
     is_active: true,
+    focus_x: 50,
+    focus_y: 50,
+    zoom: 1,
   });
 
   useEffect(() => {
@@ -53,6 +57,9 @@ export const BannerDialog = ({ open, onOpenChange, banner }: BannerDialogProps) 
         position: banner.position || "hero",
         sort_order: banner.sort_order?.toString() || "0",
         is_active: banner.is_active ?? true,
+        focus_x: banner.focus_x ?? 50,
+        focus_y: banner.focus_y ?? 50,
+        zoom: banner.zoom ?? 1,
       });
     } else {
       setForm({
@@ -83,6 +90,9 @@ export const BannerDialog = ({ open, onOpenChange, banner }: BannerDialogProps) 
       position: form.position,
       sort_order: parseInt(form.sort_order) || 0,
       is_active: form.is_active,
+      focus_x: form.focus_x,
+      focus_y: form.focus_y,
+      zoom: form.zoom,
     };
 
     try {
@@ -180,6 +190,40 @@ export const BannerDialog = ({ open, onOpenChange, banner }: BannerDialogProps) 
               />
             </div>
           </div>
+          {form.position === "hero" && (
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label>Horizontal position</Label>
+                <Slider
+                  min={0}
+                  max={100}
+                  step={1}
+                  value={[form.focus_x]}
+                  onValueChange={([value]) => setForm({ ...form, focus_x: value })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Vertical position</Label>
+                <Slider
+                  min={0}
+                  max={100}
+                  step={1}
+                  value={[form.focus_y]}
+                  onValueChange={([value]) => setForm({ ...form, focus_y: value })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Zoom</Label>
+                <Slider
+                  min={1}
+                  max={2}
+                  step={0.01}
+                  value={[form.zoom]}
+                  onValueChange={([value]) => setForm({ ...form, zoom: value })}
+                />
+              </div>
+            </div>
+          )}
           <div className="flex items-center gap-2">
             <Switch
               checked={form.is_active}

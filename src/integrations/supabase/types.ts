@@ -83,6 +83,9 @@ export type Database = {
           subtitle_bn: string | null
           title: string | null
           title_bn: string | null
+          focus_x: number | null
+          focus_y: number | null
+          zoom: number | null
         }
         Insert: {
           created_at?: string
@@ -96,6 +99,9 @@ export type Database = {
           subtitle_bn?: string | null
           title?: string | null
           title_bn?: string | null
+          focus_x?: number | null
+          focus_y?: number | null
+          zoom?: number | null
         }
         Update: {
           created_at?: string
@@ -109,6 +115,9 @@ export type Database = {
           subtitle_bn?: string | null
           title?: string | null
           title_bn?: string | null
+          focus_x?: number | null
+          focus_y?: number | null
+          zoom?: number | null
         }
         Relationships: []
       }
@@ -120,6 +129,8 @@ export type Database = {
           focus_x: number | null
           focus_y: number | null
           zoom: number | null
+          cta_text: string | null
+          cta_link: string | null
           is_active: boolean | null
         }
         Insert: {
@@ -129,6 +140,8 @@ export type Database = {
           focus_x?: number | null
           focus_y?: number | null
           zoom?: number | null
+          cta_text?: string | null
+          cta_link?: string | null
           is_active?: boolean | null
         }
         Update: {
@@ -138,6 +151,8 @@ export type Database = {
           focus_x?: number | null
           focus_y?: number | null
           zoom?: number | null
+          cta_text?: string | null
+          cta_link?: string | null
           is_active?: boolean | null
         }
         Relationships: []

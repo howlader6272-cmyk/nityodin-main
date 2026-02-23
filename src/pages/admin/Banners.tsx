@@ -88,6 +88,21 @@ const AdminBanners = () => {
                   src={banner.image_url}
                   alt={banner.title_bn || "Banner"}
                   className="w-full h-full object-cover"
+                  style={{
+                    objectPosition: `${
+                      banner.position === "hero"
+                        ? banner.focus_x ?? 50
+                        : 50
+                    }% ${
+                      banner.position === "hero"
+                        ? banner.focus_y ?? 50
+                        : 50
+                    }%`,
+                    transform:
+                      banner.position === "hero"
+                        ? `scale(${banner.zoom ?? 1})`
+                        : undefined,
+                  }}
                 />
               ) : (
                 <div className="w-full h-full flex items-center justify-center">
