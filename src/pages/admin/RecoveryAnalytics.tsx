@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { TrendingUp, ArrowRightLeft, ShoppingCart, DollarSign, Target, Calendar } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import {
   Select,
   SelectContent,
@@ -25,15 +24,22 @@ import {
   Legend,
 } from "recharts";
 import { supabase } from "@/integrations/supabase/client";
-import type { Json } from "@/integrations/supabase/types";
-import { format, subDays, startOfDay, endOfDay } from "date-fns";
+import { format, subDays } from "date-fns";
 import { bn } from "date-fns/locale";
+
+interface CartItem {
+  productId: string;
+  name_bn: string;
+  quantity: number;
+  price: number;
+  variant_name_bn?: string;
+}
 
 interface IncompleteOrder {
   id: string;
   created_at: string;
   is_converted: boolean;
-  cart_data: Json[] | null;
+  cart_data: CartItem[] | null;
   customer_phone: string | null;
 }
 
@@ -68,9 +74,9 @@ const RecoveryAnalytics = () => {
     fetchData();
   }, [fetchData]);
 
-  const getCartTotal = (cartData: Json[] | null) => {
+  const getCartTotal = (cartData: CartItem[] | null) => {
     if (!cartData || cartData.length === 0) return 0;
-    return cartData.reduce((sum, item) => sum + (item.price || 0) * (item.quantity || 0), 0);
+    return cartData.reduce((sum, item) => sum + item.price * item.quantity, 0);
   };
 
   // Calculate stats

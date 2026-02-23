@@ -135,7 +135,7 @@ const AdminGeneralSettings = () => {
       const fileName = `hero/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
 
       const { error: uploadError } = await supabase.storage
-        .from("hero-assets")
+        .from("site-assets")
         .upload(fileName, file);
       if (uploadError) throw uploadError;
 
@@ -175,7 +175,7 @@ const AdminGeneralSettings = () => {
   const handleHeroDelete = async (image: HeroImage) => {
     try {
       const { error: storageError } = await supabase.storage
-        .from("hero-assets")
+        .from("site-assets")
         .remove([image.image_path]);
       if (storageError) throw storageError;
 
@@ -194,7 +194,7 @@ const AdminGeneralSettings = () => {
   };
 
   const getHeroPublicUrl = (path: string) => {
-    const { data } = supabase.storage.from("hero-assets").getPublicUrl(path);
+    const { data } = supabase.storage.from("site-assets").getPublicUrl(path);
     return data.publicUrl;
   };
 

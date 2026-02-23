@@ -52,7 +52,7 @@ const HeroBanner = () => {
 
     const fromHeroImages: Banner[] =
       heroImages?.map((img) => {
-        const { data } = supabase.storage.from("hero-assets").getPublicUrl(img.image_path);
+        const { data } = supabase.storage.from("site-assets").getPublicUrl(img.image_path);
         return {
           id: img.id,
           title_bn: title,

@@ -47,7 +47,7 @@ const AdminHeroImages = () => {
     mutationFn: async (image: HeroImage) => {
       const path = image.image_path;
       const { error: storageError } = await supabase.storage
-        .from("hero-assets")
+        .from("site-assets")
         .remove([path]);
       if (storageError) throw storageError;
 
@@ -85,7 +85,7 @@ const AdminHeroImages = () => {
       const fileName = `hero/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
 
       const { error: uploadError } = await supabase.storage
-        .from("hero-assets")
+        .from("site-assets")
         .upload(fileName, file);
       if (uploadError) throw uploadError;
 
@@ -106,7 +106,7 @@ const AdminHeroImages = () => {
   };
 
   const getPublicUrl = (path: string) => {
-    const { data } = supabase.storage.from("hero-assets").getPublicUrl(path);
+    const { data } = supabase.storage.from("site-assets").getPublicUrl(path);
     return data.publicUrl;
   };
 
@@ -197,4 +197,3 @@ const AdminHeroImages = () => {
 };
 
 export default AdminHeroImages;
-
