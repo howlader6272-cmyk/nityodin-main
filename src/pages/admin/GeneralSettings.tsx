@@ -21,6 +21,8 @@ import ImageUpload from "@/components/admin/ImageUpload";
 import { useSiteConfig, useUpdateSiteConfig } from "@/hooks/useAdminData";
 import { Switch } from "@/components/ui/switch";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Slider } from "@/components/ui/slider";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -53,6 +55,8 @@ interface HeroImage {
   id: string;
   image_path: string;
   is_active: boolean | null;
+  focus_x?: number | null;
+  focus_y?: number | null;
 }
 
 const AdminGeneralSettings = () => {
@@ -94,6 +98,12 @@ const AdminGeneralSettings = () => {
   const [heroImages, setHeroImages] = useState<HeroImage[]>([]);
   const [heroLoading, setHeroLoading] = useState(false);
   const [heroUploading, setHeroUploading] = useState(false);
+  const [heroCropOpen, setHeroCropOpen] = useState(false);
+  const [heroCropPreview, setHeroCropPreview] = useState<string | null>(null);
+  const [heroCropFile, setHeroCropFile] = useState<File | null>(null);
+  const [heroFocusX, setHeroFocusX] = useState(50);
+  const [heroFocusY, setHeroFocusY] = useState(50);
+  const [heroEditingImage, setHeroEditingImage] = useState<HeroImage | null>(null);
 
   const fetchHeroImages = async () => {
     setHeroLoading(true);
@@ -128,26 +138,70 @@ const AdminGeneralSettings = () => {
       return;
     }
 
+    const previewUrl = URL.createObjectURL(file);
+    setHeroCropPreview(previewUrl);
+    setHeroCropFile(file);
+    setHeroFocusX(50);
+    setHeroFocusY(50);
+    setHeroEditingImage(null);
+    setHeroCropOpen(true);
+    event.target.value = "";
+  };
+
+  const handleConfirmHeroCrop = async () => {
+    if (!heroCropFile && !heroEditingImage) return;
+
     setHeroUploading(true);
 
     try {
-      const ext = file.name.split(".").pop();
-      const fileName = `hero/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+      if (heroCropFile) {
+        const ext = heroCropFile.name.split(".").pop();
+        const fileName = `hero/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
 
-      const { error: uploadError } = await supabase.storage
-        .from("site-assets")
-        .upload(fileName, file);
-      if (uploadError) throw uploadError;
+        const { error: uploadError } = await supabase.storage
+          .from("site-assets")
+          .upload(fileName, heroCropFile);
+        if (uploadError) throw uploadError;
 
-      const { data, error } = await supabase
-        .from("hero_images")
-        .insert({ image_path: fileName, is_active: true })
-        .select("*")
-        .single();
-      if (error) throw error;
+        const { data, error } = await supabase
+          .from("hero_images")
+          .insert({
+            image_path: fileName,
+            is_active: true,
+            focus_x: heroFocusX,
+            focus_y: heroFocusY,
+          })
+          .select("*")
+          .single();
+        if (error) throw error;
 
-      setHeroImages((prev) => [data as HeroImage, ...prev]);
-      toast.success("হিরো ছবি আপলোড হয়েছে");
+        setHeroImages((prev) => [data as HeroImage, ...prev]);
+        toast.success("হিরো ছবি আপলোড হয়েছে");
+      } else if (heroEditingImage) {
+        const { error } = await supabase
+          .from("hero_images")
+          .update({
+            focus_x: heroFocusX,
+            focus_y: heroFocusY,
+          })
+          .eq("id", heroEditingImage.id);
+        if (error) throw error;
+
+        setHeroImages((prev) =>
+          prev.map((img) =>
+            img.id === heroEditingImage.id ? { ...img, focus_x: heroFocusX, focus_y: heroFocusY } : img,
+          ),
+        );
+        toast.success("হিরো ছবির crop আপডেট হয়েছে");
+      }
+
+      setHeroCropOpen(false);
+      if (heroCropPreview) {
+        URL.revokeObjectURL(heroCropPreview);
+      }
+      setHeroCropPreview(null);
+      setHeroCropFile(null);
+      setHeroEditingImage(null);
     } catch (error) {
       console.error(error);
       const message =
@@ -157,7 +211,6 @@ const AdminGeneralSettings = () => {
       toast.error(message ? `ছবি আপলোড করা যায়নি: ${message}` : "ছবি আপলোড করা যায়নি");
     } finally {
       setHeroUploading(false);
-      event.target.value = "";
     }
   };
 
@@ -541,6 +594,68 @@ const AdminGeneralSettings = () => {
               <CardTitle>Hero Images Gallery</CardTitle>
             </CardHeader>
             <CardContent>
+              <Dialog open={heroCropOpen} onOpenChange={setHeroCropOpen}>
+                <DialogContent className="max-w-xl">
+                  <DialogHeader>
+                    <DialogTitle>Hero Image Crop / Position</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-4">
+                    {heroCropPreview && (
+                      <div className="w-full aspect-[16/9] rounded-lg border overflow-hidden bg-muted">
+                        <img
+                          src={heroCropPreview}
+                          alt="Hero preview"
+                          className="w-full h-full object-cover"
+                          style={{
+                            objectPosition: `${heroFocusX}% ${heroFocusY}%`,
+                          }}
+                        />
+                      </div>
+                    )}
+                    <div className="space-y-2">
+                      <Label>Horizontal position</Label>
+                      <Slider
+                        min={0}
+                        max={100}
+                        step={1}
+                        value={[heroFocusX]}
+                        onValueChange={([value]) => setHeroFocusX(value)}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Vertical position</Label>
+                      <Slider
+                        min={0}
+                        max={100}
+                        step={1}
+                        value={[heroFocusY]}
+                        onValueChange={([value]) => setHeroFocusY(value)}
+                      />
+                    </div>
+                  </div>
+                  <DialogFooter className="mt-4">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => {
+                        setHeroCropOpen(false);
+                        if (heroCropPreview) {
+                          URL.revokeObjectURL(heroCropPreview);
+                        }
+                        setHeroCropPreview(null);
+                        setHeroCropFile(null);
+                        setHeroEditingImage(null);
+                      }}
+                    >
+                      বাতিল
+                    </Button>
+                    <Button type="button" onClick={handleConfirmHeroCrop} disabled={heroUploading}>
+                      {heroUploading ? "আপলোড হচ্ছে..." : "Crop করে আপলোড করুন"}
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+
               <div className="flex items-center justify-between mb-4">
                 <p className="text-sm text-muted-foreground">
                   একাধিক হিরো ছবি upload করে এখানে manage করুন।
@@ -581,11 +696,31 @@ const AdminGeneralSettings = () => {
                       key={image.id}
                       className="relative rounded-lg border overflow-hidden"
                     >
-                      <img
-                        src={getHeroPublicUrl(image.image_path)}
-                        alt="Hero"
-                        className="w-full h-32 object-cover"
-                      />
+                      <button
+                        type="button"
+                        className="block w-full h-32 relative group"
+                        onClick={() => {
+                          const url = getHeroPublicUrl(image.image_path);
+                          setHeroCropPreview(url);
+                          setHeroCropFile(null);
+                          setHeroFocusX(image.focus_x ?? 50);
+                          setHeroFocusY(image.focus_y ?? 50);
+                          setHeroEditingImage(image);
+                          setHeroCropOpen(true);
+                        }}
+                      >
+                        <img
+                          src={getHeroPublicUrl(image.image_path)}
+                          alt="Hero"
+                          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                          style={{
+                            objectPosition: `${image.focus_x ?? 50}% ${image.focus_y ?? 50}%`,
+                          }}
+                        />
+                        <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 flex items-center justify-center text-xs text-white transition-opacity">
+                          Crop / Position edit করুন
+                        </div>
+                      </button>
                       <div className="flex items-center justify-between px-2 py-2 border-t bg-background/80">
                         <div className="flex items-center gap-2">
                           <Switch

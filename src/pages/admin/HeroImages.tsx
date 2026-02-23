@@ -6,16 +6,26 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Trash2, Upload } from "lucide-react";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Slider } from "@/components/ui/slider";
 
 interface HeroImage {
   id: string;
   image_path: string;
   is_active: boolean | null;
+  focus_x?: number | null;
+  focus_y?: number | null;
 }
 
 const AdminHeroImages = () => {
   const queryClient = useQueryClient();
   const [uploading, setUploading] = useState(false);
+  const [cropOpen, setCropOpen] = useState(false);
+  const [cropPreview, setCropPreview] = useState<string | null>(null);
+  const [cropFile, setCropFile] = useState<File | null>(null);
+  const [focusX, setFocusX] = useState(50);
+  const [focusY, setFocusY] = useState(50);
+  const [editingImage, setEditingImage] = useState<HeroImage | null>(null);
 
   const { data: images, isLoading } = useQuery({
     queryKey: ["hero-images"],
@@ -78,30 +88,68 @@ const AdminHeroImages = () => {
       return;
     }
 
+    const previewUrl = URL.createObjectURL(file);
+    setCropPreview(previewUrl);
+    setCropFile(file);
+    setFocusX(50);
+    setFocusY(50);
+    setEditingImage(null);
+    setCropOpen(true);
+    event.target.value = "";
+  };
+
+  const handleConfirmCrop = async () => {
+    if (!cropFile && !editingImage) return;
+
     setUploading(true);
 
     try {
-      const ext = file.name.split(".").pop();
-      const fileName = `hero/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+      if (cropFile) {
+        const ext = cropFile.name.split(".").pop();
+        const fileName = `hero/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
 
-      const { error: uploadError } = await supabase.storage
-        .from("site-assets")
-        .upload(fileName, file);
-      if (uploadError) throw uploadError;
+        const { error: uploadError } = await supabase.storage
+          .from("site-assets")
+          .upload(fileName, cropFile);
+        if (uploadError) throw uploadError;
 
-      const { error } = await supabase
-        .from("hero_images")
-        .insert({ image_path: fileName, is_active: true });
-      if (error) throw error;
+        const { error } = await supabase
+          .from("hero_images")
+          .insert({
+            image_path: fileName,
+            is_active: true,
+            focus_x: focusX,
+            focus_y: focusY,
+          });
+        if (error) throw error;
 
-      toast.success("হিরো ছবি আপলোড হয়েছে");
+        toast.success("হিরো ছবি আপলোড হয়েছে");
+      } else if (editingImage) {
+        const { error } = await supabase
+          .from("hero_images")
+          .update({
+            focus_x: focusX,
+            focus_y: focusY,
+          })
+          .eq("id", editingImage.id);
+        if (error) throw error;
+
+        toast.success("হিরো ছবির crop আপডেট হয়েছে");
+      }
+
       queryClient.invalidateQueries({ queryKey: ["hero-images"] });
+      setCropOpen(false);
+      if (cropPreview) {
+        URL.revokeObjectURL(cropPreview);
+      }
+      setCropPreview(null);
+      setCropFile(null);
+      setEditingImage(null);
     } catch (error) {
       console.error(error);
       toast.error("ছবি আপলোড করা যায়নি");
     } finally {
       setUploading(false);
-      event.target.value = "";
     }
   };
 
@@ -120,6 +168,68 @@ const AdminHeroImages = () => {
           </p>
         </div>
         <div>
+          <Dialog open={cropOpen} onOpenChange={setCropOpen}>
+            <DialogContent className="max-w-xl">
+              <DialogHeader>
+                <DialogTitle>Hero Image Crop / Position</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4">
+                {cropPreview && (
+                  <div className="w-full aspect-[16/9] rounded-lg border overflow-hidden bg-muted">
+                    <img
+                      src={cropPreview}
+                      alt="Hero preview"
+                      className="w-full h-full object-cover"
+                      style={{
+                        objectPosition: `${focusX}% ${focusY}%`,
+                      }}
+                    />
+                  </div>
+                )}
+                <div className="space-y-2">
+                  <p className="text-sm text-muted-foreground">Horizontally image kothay focus thakবে</p>
+                  <Slider
+                    min={0}
+                    max={100}
+                    step={1}
+                    value={[focusX]}
+                    onValueChange={([value]) => setFocusX(value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <p className="text-sm text-muted-foreground">Vertically image kothay focus thakবে</p>
+                  <Slider
+                    min={0}
+                    max={100}
+                    step={1}
+                    value={[focusY]}
+                    onValueChange={([value]) => setFocusY(value)}
+                  />
+                </div>
+              </div>
+              <DialogFooter className="mt-4">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    setCropOpen(false);
+                    if (cropPreview) {
+                      URL.revokeObjectURL(cropPreview);
+                    }
+                    setCropPreview(null);
+                    setCropFile(null);
+                    setEditingImage(null);
+                  }}
+                >
+                  বাতিল
+                </Button>
+                <Button type="button" onClick={handleConfirmCrop} disabled={uploading}>
+                  {uploading ? "আপলোড হচ্ছে..." : "Crop করে আপলোড করুন"}
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+
           <input
             id="hero-image-upload"
             type="file"
@@ -159,11 +269,31 @@ const AdminHeroImages = () => {
                   key={image.id}
                   className="relative rounded-lg border overflow-hidden"
                 >
-                  <img
-                    src={getPublicUrl(image.image_path)}
-                    alt="Hero"
-                    className="w-full h-32 object-cover"
-                  />
+                      <button
+                        type="button"
+                        className="block w-full h-32 relative group"
+                        onClick={() => {
+                          const url = getPublicUrl(image.image_path);
+                          setCropPreview(url);
+                          setCropFile(null);
+                          setFocusX(image.focus_x ?? 50);
+                          setFocusY(image.focus_y ?? 50);
+                          setEditingImage(image);
+                          setCropOpen(true);
+                        }}
+                      >
+                        <img
+                          src={getPublicUrl(image.image_path)}
+                          alt="Hero"
+                          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                          style={{
+                            objectPosition: `${image.focus_x ?? 50}% ${image.focusY ?? 50}%`,
+                          }}
+                        />
+                        <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 flex items-center justify-center text-xs text-white transition-opacity">
+                          Crop / Position edit করুন
+                        </div>
+                      </button>
                   <div className="flex items-center justify-between px-2 py-2 border-t bg-background/80">
                     <div className="flex items-center gap-2">
                       <Switch

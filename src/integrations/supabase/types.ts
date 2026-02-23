@@ -117,18 +117,24 @@ export type Database = {
           created_at: string
           id: string
           image_path: string
+          focus_x: number | null
+          focus_y: number | null
           is_active: boolean | null
         }
         Insert: {
           created_at?: string
           id?: string
           image_path: string
+          focus_x?: number | null
+          focus_y?: number | null
           is_active?: boolean | null
         }
         Update: {
           created_at?: string
           id?: string
           image_path?: string
+          focus_x?: number | null
+          focus_y?: number | null
           is_active?: boolean | null
         }
         Relationships: []
