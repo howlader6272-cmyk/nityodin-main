@@ -131,6 +131,8 @@ export type Database = {
           zoom: number | null
           cta_text: string | null
           cta_link: string | null
+          title_bn: string | null
+          subtitle_bn: string | null
           is_active: boolean | null
         }
         Insert: {
@@ -142,6 +144,8 @@ export type Database = {
           zoom?: number | null
           cta_text?: string | null
           cta_link?: string | null
+          title_bn?: string | null
+          subtitle_bn?: string | null
           is_active?: boolean | null
         }
         Update: {
@@ -153,6 +157,8 @@ export type Database = {
           zoom?: number | null
           cta_text?: string | null
           cta_link?: string | null
+          title_bn?: string | null
+          subtitle_bn?: string | null
           is_active?: boolean | null
         }
         Relationships: []

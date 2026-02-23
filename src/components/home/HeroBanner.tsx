@@ -39,6 +39,8 @@ const HeroBanner = () => {
         zoom: number | null;
         cta_text: string | null;
         cta_link: string | null;
+        title_bn: string | null;
+        subtitle_bn: string | null;
       }[] | null;
     },
   });
@@ -67,8 +69,8 @@ const HeroBanner = () => {
         const { data } = supabase.storage.from("site-assets").getPublicUrl(img.image_path);
         return {
           id: img.id,
-          title_bn: title,
-          subtitle_bn: subtitle,
+          title_bn: img.title_bn || title,
+          subtitle_bn: img.subtitle_bn || subtitle,
           image_url: data.publicUrl,
           link_url: img.cta_link || link,
           focus_x: img.focus_x,

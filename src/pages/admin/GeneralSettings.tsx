@@ -60,6 +60,8 @@ interface HeroImage {
   zoom?: number | null;
   cta_text?: string | null;
   cta_link?: string | null;
+  title_bn?: string | null;
+  subtitle_bn?: string | null;
 }
 
 const AdminGeneralSettings = () => {
@@ -110,6 +112,8 @@ const AdminGeneralSettings = () => {
   const [heroZoom, setHeroZoom] = useState(1);
   const [heroCtaText, setHeroCtaText] = useState("");
   const [heroCtaLink, setHeroCtaLink] = useState("");
+  const [heroTitleBn, setHeroTitleBn] = useState("");
+  const [heroSubtitleBn, setHeroSubtitleBn] = useState("");
 
   const fetchHeroImages = async () => {
     setHeroLoading(true);
@@ -182,6 +186,8 @@ const AdminGeneralSettings = () => {
     setHeroZoom(1);
     setHeroCtaText("");
     setHeroCtaLink("");
+    setHeroTitleBn("");
+    setHeroSubtitleBn("");
     setHeroEditingImage(null);
     setHeroCropOpen(true);
     event.target.value = "";
@@ -210,6 +216,8 @@ const AdminGeneralSettings = () => {
             focus_x: heroFocusX,
             focus_y: heroFocusY,
             zoom: heroZoom,
+            title_bn: heroTitleBn || null,
+            subtitle_bn: heroSubtitleBn || null,
             cta_text: heroCtaText || null,
             cta_link: heroCtaLink || null,
           })
@@ -226,6 +234,8 @@ const AdminGeneralSettings = () => {
             focus_x: heroFocusX,
             focus_y: heroFocusY,
             zoom: heroZoom,
+            title_bn: heroTitleBn || null,
+            subtitle_bn: heroSubtitleBn || null,
             cta_text: heroCtaText || null,
             cta_link: heroCtaLink || null,
           })
@@ -235,7 +245,16 @@ const AdminGeneralSettings = () => {
         setHeroImages((prev) =>
           prev.map((img) =>
             img.id === heroEditingImage.id
-              ? { ...img, focus_x: heroFocusX, focus_y: heroFocusY, zoom: heroZoom }
+              ? {
+                  ...img,
+                  focus_x: heroFocusX,
+                  focus_y: heroFocusY,
+                  zoom: heroZoom,
+                  title_bn: heroTitleBn || null,
+                  subtitle_bn: heroSubtitleBn || null,
+                  cta_text: heroCtaText || null,
+                  cta_link: heroCtaLink || null,
+                }
               : img,
           ),
         );
@@ -250,6 +269,8 @@ const AdminGeneralSettings = () => {
       setHeroCropFile(null);
       setHeroEditingImage(null);
       setHeroZoom(1);
+      setHeroTitleBn("");
+      setHeroSubtitleBn("");
       setHeroCtaText("");
       setHeroCtaLink("");
     } catch (error) {
@@ -700,6 +721,22 @@ const AdminGeneralSettings = () => {
                       />
                     </div>
                     <div className="space-y-2">
+                      <Label>Heading (optional)</Label>
+                      <Input
+                        value={heroTitleBn}
+                        onChange={(e) => setHeroTitleBn(e.target.value)}
+                        placeholder="বিশেষ ছাড় চলছে!"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Sub-heading (optional)</Label>
+                      <Input
+                        value={heroSubtitleBn}
+                        onChange={(e) => setHeroSubtitleBn(e.target.value)}
+                        placeholder="৩টি পণ্য কিনলে ৫% ছাড়..."
+                      />
+                    </div>
+                    <div className="space-y-2">
                       <Label>CTA Text (optional)</Label>
                       <Input
                         value={heroCtaText}
@@ -728,6 +765,8 @@ const AdminGeneralSettings = () => {
                         setHeroCropFile(null);
                         setHeroEditingImage(null);
                         setHeroZoom(1);
+                        setHeroTitleBn("");
+                        setHeroSubtitleBn("");
                         setHeroCtaText("");
                         setHeroCtaLink("");
                       }}
@@ -791,6 +830,10 @@ const AdminGeneralSettings = () => {
                           setHeroFocusX(image.focus_x ?? 50);
                           setHeroFocusY(image.focus_y ?? 50);
                           setHeroZoom(image.zoom ?? 1);
+                          setHeroTitleBn(image.title_bn ?? "");
+                          setHeroSubtitleBn(image.subtitle_bn ?? "");
+                          setHeroCtaText(image.cta_text ?? "");
+                          setHeroCtaLink(image.cta_link ?? "");
                           setHeroEditingImage(image);
                           setHeroCropOpen(true);
                         }}
@@ -829,6 +872,66 @@ const AdminGeneralSettings = () => {
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button>
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-xs">Heading</Label>
+                          <Input
+                            value={image.title_bn ?? ""}
+                            onChange={(e) => {
+                              const value = e.target.value;
+                              setHeroImages((prev) =>
+                                prev.map((img) =>
+                                  img.id === image.id ? { ...img, title_bn: value } : img,
+                                ),
+                              );
+                            }}
+                            onBlur={async (e) => {
+                              const value = e.target.value;
+                              if (value === (image.title_bn ?? "")) return;
+                              try {
+                                const { error } = await supabase
+                                  .from("hero_images")
+                                  .update({ title_bn: value || null })
+                                  .eq("id", image.id);
+                                if (error) throw error;
+                              } catch (error) {
+                                console.error(error);
+                                toast.error("Heading সংরক্ষণ করা যায়নি");
+                              }
+                            }}
+                            placeholder="বিশেষ ছাড় চলছে!"
+                            className="h-7 text-xs"
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-xs">Sub-heading</Label>
+                          <Input
+                            value={image.subtitle_bn ?? ""}
+                            onChange={(e) => {
+                              const value = e.target.value;
+                              setHeroImages((prev) =>
+                                prev.map((img) =>
+                                  img.id === image.id ? { ...img, subtitle_bn: value } : img,
+                                ),
+                              );
+                            }}
+                            onBlur={async (e) => {
+                              const value = e.target.value;
+                              if (value === (image.subtitle_bn ?? "")) return;
+                              try {
+                                const { error } = await supabase
+                                  .from("hero_images")
+                                  .update({ subtitle_bn: value || null })
+                                  .eq("id", image.id);
+                                if (error) throw error;
+                              } catch (error) {
+                                console.error(error);
+                                toast.error("Sub-heading সংরক্ষণ করা যায়নি");
+                              }
+                            }}
+                            placeholder="৩টি পণ্য কিনলে ৫% ছাড়..."
+                            className="h-7 text-xs"
+                          />
                         </div>
                         <div className="space-y-1">
                           <Label className="text-xs">CTA Text</Label>

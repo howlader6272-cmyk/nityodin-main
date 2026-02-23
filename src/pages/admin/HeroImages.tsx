@@ -20,6 +20,8 @@ interface HeroImage {
   zoom?: number | null;
   cta_text?: string | null;
   cta_link?: string | null;
+  title_bn?: string | null;
+  subtitle_bn?: string | null;
 }
 
 const AdminHeroImages = () => {
@@ -34,6 +36,8 @@ const AdminHeroImages = () => {
   const [zoom, setZoom] = useState(1);
   const [ctaText, setCtaText] = useState("");
   const [ctaLink, setCtaLink] = useState("");
+  const [titleBn, setTitleBn] = useState("");
+  const [subtitleBn, setSubtitleBn] = useState("");
 
   const { data: images, isLoading } = useQuery({
     queryKey: ["hero-images"],
@@ -104,6 +108,8 @@ const AdminHeroImages = () => {
     setZoom(1);
     setCtaText("");
     setCtaLink("");
+    setTitleBn("");
+    setSubtitleBn("");
     setEditingImage(null);
     setCropOpen(true);
     event.target.value = "";
@@ -134,6 +140,8 @@ const AdminHeroImages = () => {
             zoom,
             cta_text: ctaText || null,
             cta_link: ctaLink || null,
+            title_bn: titleBn || null,
+            subtitle_bn: subtitleBn || null,
           })
           .select("*")
           .single();
@@ -154,6 +162,8 @@ const AdminHeroImages = () => {
             zoom,
             cta_text: ctaText || null,
             cta_link: ctaLink || null,
+            title_bn: titleBn || null,
+            subtitle_bn: subtitleBn || null,
           })
           .eq("id", editingImage.id);
         if (error) throw error;
@@ -178,6 +188,8 @@ const AdminHeroImages = () => {
       setZoom(1);
       setCtaText("");
       setCtaLink("");
+      setTitleBn("");
+      setSubtitleBn("");
     } catch (error) {
       console.error(error);
       toast.error("ছবি আপলোড করা যায়নি");
@@ -251,6 +263,22 @@ const AdminHeroImages = () => {
                   />
                 </div>
                 <div className="space-y-2">
+                  <Label>Heading (optional)</Label>
+                  <Input
+                    value={titleBn}
+                    onChange={(e) => setTitleBn(e.target.value)}
+                    placeholder="বিশেষ ছাড় চলছে!"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Sub-heading (optional)</Label>
+                  <Input
+                    value={subtitleBn}
+                    onChange={(e) => setSubtitleBn(e.target.value)}
+                    placeholder="৩টি পণ্য কিনলে ৫% ছাড়..."
+                  />
+                </div>
+                <div className="space-y-2">
                   <Label>CTA Text (optional)</Label>
                   <Input value={ctaText} onChange={(e) => setCtaText(e.target.value)} />
                 </div>
@@ -276,6 +304,8 @@ const AdminHeroImages = () => {
                     setCropFile(null);
                     setEditingImage(null);
                     setZoom(1);
+                    setTitleBn("");
+                    setSubtitleBn("");
                     setCtaText("");
                     setCtaLink("");
                   }}
@@ -338,6 +368,8 @@ const AdminHeroImages = () => {
                           setFocusX(image.focus_x ?? 50);
                           setFocusY(image.focus_y ?? 50);
                           setZoom(image.zoom ?? 1);
+                          setTitleBn(image.title_bn ?? "");
+                          setSubtitleBn(image.subtitle_bn ?? "");
                           setCtaText(image.cta_text ?? "");
                           setCtaLink(image.cta_link ?? "");
                           setEditingImage(image);
