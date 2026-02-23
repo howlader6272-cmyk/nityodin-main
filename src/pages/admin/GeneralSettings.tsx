@@ -342,10 +342,10 @@ const AdminGeneralSettings = () => {
       cta_link: siteConfig.cta_link || "",
       primary_color: siteConfig.primary_color || "",
       is_dark_mode: siteConfig.is_dark_mode ?? false,
-      meta_pixel_id: siteConfig.meta_pixel_id || "",
-      google_analytics_id: siteConfig.google_analytics_id || "",
-      custom_scripts: siteConfig.custom_scripts || "",
-      custom_head_scripts: siteConfig.custom_head_scripts || "",
+      meta_pixel_id: "",
+      google_analytics_id: "",
+      custom_scripts: "",
+      custom_head_scripts: "",
       phone_number: siteConfig.phone_number || "",
       whatsapp_number: siteConfig.whatsapp_number || "",
       facebook_link: siteConfig.facebook_link || "",
@@ -399,9 +399,21 @@ const AdminGeneralSettings = () => {
     await updateSiteConfig.mutateAsync({
       id: siteConfig?.id,
       ...form,
+      meta_pixel_id: form.meta_pixel_id || siteConfig?.meta_pixel_id || "",
+      google_analytics_id: form.google_analytics_id || siteConfig?.google_analytics_id || "",
+      custom_scripts: form.custom_scripts || siteConfig?.custom_scripts || "",
+      custom_head_scripts: form.custom_head_scripts || siteConfig?.custom_head_scripts || "",
       countdown_end: form.countdown_end || null,
       testimonial_json: testimonials,
     });
+
+    setForm((prev) => ({
+      ...prev,
+      meta_pixel_id: "",
+      google_analytics_id: "",
+      custom_scripts: "",
+      custom_head_scripts: "",
+    }));
 
     if (form.hero_image_url && form.hero_image_url !== previousHeroUrl) {
       await syncFallbackHeroToHeroImages(form.hero_image_url);
@@ -432,22 +444,22 @@ const AdminGeneralSettings = () => {
       <Tabs defaultValue="branding" className="space-y-6">
         <div className="-mx-1 px-1">
           <TabsList className="grid w-full grid-cols-2 gap-2 sm:grid-cols-3 md:w-auto md:inline-flex">
-            <TabsTrigger value="branding" className="whitespace-nowrap">
+            <TabsTrigger value="branding" className="text-xs sm:text-sm text-center">
               Branding & SEO
             </TabsTrigger>
-            <TabsTrigger value="design" className="whitespace-nowrap">
+            <TabsTrigger value="design" className="text-xs sm:text-sm text-center">
               Design
             </TabsTrigger>
-            <TabsTrigger value="hero" className="whitespace-nowrap">
+            <TabsTrigger value="hero" className="text-xs sm:text-sm text-center">
               Hero & Promo
             </TabsTrigger>
-            <TabsTrigger value="tracking" className="whitespace-nowrap">
+            <TabsTrigger value="tracking" className="text-xs sm:text-sm text-center">
               Tracking & Scripts
             </TabsTrigger>
-            <TabsTrigger value="contact" className="whitespace-nowrap">
+            <TabsTrigger value="contact" className="text-xs sm:text-sm text-center">
               Contact & Footer
             </TabsTrigger>
-            <TabsTrigger value="testimonials" className="whitespace-nowrap">
+            <TabsTrigger value="testimonials" className="text-xs sm:text-sm text-center">
               Testimonials
             </TabsTrigger>
           </TabsList>
@@ -1086,6 +1098,11 @@ const AdminGeneralSettings = () => {
                     value={form.meta_pixel_id}
                     onChange={(e) => setForm({ ...form, meta_pixel_id: e.target.value })}
                   />
+                  {siteConfig?.meta_pixel_id && (
+                    <p className="text-xs text-muted-foreground break-all">
+                      বর্তমান: {siteConfig.meta_pixel_id}
+                    </p>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="ga-id">Google Analytics ID</Label>
@@ -1094,6 +1111,11 @@ const AdminGeneralSettings = () => {
                     value={form.google_analytics_id}
                     onChange={(e) => setForm({ ...form, google_analytics_id: e.target.value })}
                   />
+                  {siteConfig?.google_analytics_id && (
+                    <p className="text-xs text-muted-foreground break-all">
+                      বর্তমান: {siteConfig.google_analytics_id}
+                    </p>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -1102,13 +1124,27 @@ const AdminGeneralSettings = () => {
               <CardHeader>
                 <CardTitle>Header / Footer Scripts</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-2">
+              <CardContent className="space-y-3">
+                <div className="space-y-2">
+                  <Label>নতুন Script যোগ করুন</Label>
                 <Textarea
                   value={form.custom_head_scripts}
                   onChange={(e) => setForm({ ...form, custom_head_scripts: e.target.value })}
                   rows={8}
                   placeholder="<script>...</script>"
                 />
+                </div>
+                {siteConfig?.custom_head_scripts && (
+                  <div className="space-y-1">
+                    <Label className="text-xs">বর্তমান Script (শুধু দেখার জন্য)</Label>
+                    <Textarea
+                      value={siteConfig.custom_head_scripts}
+                      readOnly
+                      rows={6}
+                      className="text-xs bg-muted"
+                    />
+                  </div>
+                )}
               </CardContent>
             </Card>
           </div>
