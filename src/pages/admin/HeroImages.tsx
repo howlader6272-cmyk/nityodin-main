@@ -15,6 +15,7 @@ interface HeroImage {
   is_active: boolean | null;
   focus_x?: number | null;
   focus_y?: number | null;
+  zoom?: number | null;
 }
 
 const AdminHeroImages = () => {
@@ -26,6 +27,7 @@ const AdminHeroImages = () => {
   const [focusX, setFocusX] = useState(50);
   const [focusY, setFocusY] = useState(50);
   const [editingImage, setEditingImage] = useState<HeroImage | null>(null);
+  const [zoom, setZoom] = useState(1);
 
   const { data: images, isLoading } = useQuery({
     queryKey: ["hero-images"],
@@ -93,6 +95,7 @@ const AdminHeroImages = () => {
     setCropFile(file);
     setFocusX(50);
     setFocusY(50);
+    setZoom(1);
     setEditingImage(null);
     setCropOpen(true);
     event.target.value = "";
@@ -120,6 +123,7 @@ const AdminHeroImages = () => {
             is_active: true,
             focus_x: focusX,
             focus_y: focusY,
+            zoom,
           });
         if (error) throw error;
 
@@ -130,6 +134,7 @@ const AdminHeroImages = () => {
           .update({
             focus_x: focusX,
             focus_y: focusY,
+            zoom,
           })
           .eq("id", editingImage.id);
         if (error) throw error;
@@ -145,6 +150,7 @@ const AdminHeroImages = () => {
       setCropPreview(null);
       setCropFile(null);
       setEditingImage(null);
+      setZoom(1);
     } catch (error) {
       console.error(error);
       toast.error("ছবি আপলোড করা যায়নি");
@@ -182,6 +188,7 @@ const AdminHeroImages = () => {
                       className="w-full h-full object-cover"
                       style={{
                         objectPosition: `${focusX}% ${focusY}%`,
+                        transform: `scale(${zoom})`,
                       }}
                     />
                   </div>
@@ -206,6 +213,16 @@ const AdminHeroImages = () => {
                     onValueChange={([value]) => setFocusY(value)}
                   />
                 </div>
+                <div className="space-y-2">
+                  <p className="text-sm text-muted-foreground">Zoom</p>
+                  <Slider
+                    min={1}
+                    max={2}
+                    step={0.01}
+                    value={[zoom]}
+                    onValueChange={([value]) => setZoom(value)}
+                  />
+                </div>
               </div>
               <DialogFooter className="mt-4">
                 <Button
@@ -219,6 +236,7 @@ const AdminHeroImages = () => {
                     setCropPreview(null);
                     setCropFile(null);
                     setEditingImage(null);
+                    setZoom(1);
                   }}
                 >
                   বাতিল
@@ -278,6 +296,7 @@ const AdminHeroImages = () => {
                           setCropFile(null);
                           setFocusX(image.focus_x ?? 50);
                           setFocusY(image.focus_y ?? 50);
+                          setZoom(image.zoom ?? 1);
                           setEditingImage(image);
                           setCropOpen(true);
                         }}
@@ -287,7 +306,7 @@ const AdminHeroImages = () => {
                           alt="Hero"
                           className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                           style={{
-                            objectPosition: `${image.focus_x ?? 50}% ${image.focusY ?? 50}%`,
+                            objectPosition: `${image.focus_x ?? 50}% ${image.focus_y ?? 50}%`,
                           }}
                         />
                         <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 flex items-center justify-center text-xs text-white transition-opacity">

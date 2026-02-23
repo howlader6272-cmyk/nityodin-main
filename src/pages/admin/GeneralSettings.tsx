@@ -57,6 +57,7 @@ interface HeroImage {
   is_active: boolean | null;
   focus_x?: number | null;
   focus_y?: number | null;
+  zoom?: number | null;
 }
 
 const AdminGeneralSettings = () => {
@@ -104,6 +105,7 @@ const AdminGeneralSettings = () => {
   const [heroFocusX, setHeroFocusX] = useState(50);
   const [heroFocusY, setHeroFocusY] = useState(50);
   const [heroEditingImage, setHeroEditingImage] = useState<HeroImage | null>(null);
+  const [heroZoom, setHeroZoom] = useState(1);
 
   const fetchHeroImages = async () => {
     setHeroLoading(true);
@@ -143,6 +145,7 @@ const AdminGeneralSettings = () => {
     setHeroCropFile(file);
     setHeroFocusX(50);
     setHeroFocusY(50);
+    setHeroZoom(1);
     setHeroEditingImage(null);
     setHeroCropOpen(true);
     event.target.value = "";
@@ -170,6 +173,7 @@ const AdminGeneralSettings = () => {
             is_active: true,
             focus_x: heroFocusX,
             focus_y: heroFocusY,
+            zoom: heroZoom,
           })
           .select("*")
           .single();
@@ -183,13 +187,16 @@ const AdminGeneralSettings = () => {
           .update({
             focus_x: heroFocusX,
             focus_y: heroFocusY,
+            zoom: heroZoom,
           })
           .eq("id", heroEditingImage.id);
         if (error) throw error;
 
         setHeroImages((prev) =>
           prev.map((img) =>
-            img.id === heroEditingImage.id ? { ...img, focus_x: heroFocusX, focus_y: heroFocusY } : img,
+            img.id === heroEditingImage.id
+              ? { ...img, focus_x: heroFocusX, focus_y: heroFocusY, zoom: heroZoom }
+              : img,
           ),
         );
         toast.success("হিরো ছবির crop আপডেট হয়েছে");
@@ -202,6 +209,7 @@ const AdminGeneralSettings = () => {
       setHeroCropPreview(null);
       setHeroCropFile(null);
       setHeroEditingImage(null);
+      setHeroZoom(1);
     } catch (error) {
       console.error(error);
       const message =
@@ -608,6 +616,7 @@ const AdminGeneralSettings = () => {
                           className="w-full h-full object-cover"
                           style={{
                             objectPosition: `${heroFocusX}% ${heroFocusY}%`,
+                            transform: `scale(${heroZoom})`,
                           }}
                         />
                       </div>
@@ -632,6 +641,16 @@ const AdminGeneralSettings = () => {
                         onValueChange={([value]) => setHeroFocusY(value)}
                       />
                     </div>
+                    <div className="space-y-2">
+                      <Label>Zoom</Label>
+                      <Slider
+                        min={1}
+                        max={2}
+                        step={0.01}
+                        value={[heroZoom]}
+                        onValueChange={([value]) => setHeroZoom(value)}
+                      />
+                    </div>
                   </div>
                   <DialogFooter className="mt-4">
                     <Button
@@ -645,6 +664,7 @@ const AdminGeneralSettings = () => {
                         setHeroCropPreview(null);
                         setHeroCropFile(null);
                         setHeroEditingImage(null);
+                        setHeroZoom(1);
                       }}
                     >
                       বাতিল
@@ -705,6 +725,7 @@ const AdminGeneralSettings = () => {
                           setHeroCropFile(null);
                           setHeroFocusX(image.focus_x ?? 50);
                           setHeroFocusY(image.focus_y ?? 50);
+                          setHeroZoom(image.zoom ?? 1);
                           setHeroEditingImage(image);
                           setHeroCropOpen(true);
                         }}

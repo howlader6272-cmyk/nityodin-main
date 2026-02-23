@@ -14,6 +14,7 @@ interface Banner {
   link_url?: string;
   focus_x?: number | null;
   focus_y?: number | null;
+  zoom?: number | null;
 }
 
 const HeroBanner = () => {
@@ -29,7 +30,13 @@ const HeroBanner = () => {
         .eq("is_active", true)
         .order("created_at", { ascending: true });
       if (error) throw error;
-      return data as { id: string; image_path: string; focus_x: number | null; focus_y: number | null }[] | null;
+      return data as {
+        id: string;
+        image_path: string;
+        focus_x: number | null;
+        focus_y: number | null;
+        zoom: number | null;
+      }[] | null;
     },
   });
 
@@ -63,6 +70,7 @@ const HeroBanner = () => {
           link_url: link,
           focus_x: img.focus_x,
           focus_y: img.focus_y,
+          zoom: img.zoom,
         };
       }) ?? [];
 
@@ -139,6 +147,7 @@ const HeroBanner = () => {
                 className="w-full h-full object-cover"
                 style={{
                   objectPosition: `${banner.focus_x ?? 50}% ${banner.focus_y ?? 50}%`,
+                  transform: `scale(${banner.zoom ?? 1})`,
                 }}
               />
               <div className="absolute inset-0 bg-gradient-to-r from-foreground/80 via-foreground/50 to-transparent" />

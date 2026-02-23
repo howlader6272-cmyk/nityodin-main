@@ -119,6 +119,7 @@ export type Database = {
           image_path: string
           focus_x: number | null
           focus_y: number | null
+          zoom: number | null
           is_active: boolean | null
         }
         Insert: {
@@ -127,6 +128,7 @@ export type Database = {
           image_path: string
           focus_x?: number | null
           focus_y?: number | null
+          zoom?: number | null
           is_active?: boolean | null
         }
         Update: {
@@ -135,6 +137,7 @@ export type Database = {
           image_path?: string
           focus_x?: number | null
           focus_y?: number | null
+          zoom?: number | null
           is_active?: boolean | null
         }
         Relationships: []
