@@ -62,10 +62,6 @@ const HeroBanner = () => {
         };
       }) ?? [];
 
-    if (fromHeroImages.length > 0) {
-      return fromHeroImages;
-    }
-
     const fromHeroBanners: Banner[] =
       heroBanners?.map((b: any) => ({
         id: b.id,
@@ -75,8 +71,10 @@ const HeroBanner = () => {
         link_url: b.link_url || link,
       })) ?? [];
 
-    if (fromHeroBanners.length > 0) {
-      return fromHeroBanners;
+    const combined = [...fromHeroImages, ...fromHeroBanners];
+
+    if (combined.length > 0) {
+      return combined;
     }
 
     if (!siteConfig || !siteConfig.hero_image_url) {
