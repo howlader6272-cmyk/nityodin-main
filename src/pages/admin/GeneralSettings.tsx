@@ -150,7 +150,11 @@ const AdminGeneralSettings = () => {
       toast.success("হিরো ছবি আপলোড হয়েছে");
     } catch (error) {
       console.error(error);
-      toast.error("ছবি আপলোড করা যায়নি");
+      const message =
+        error && typeof error === "object" && "message" in error && typeof (error as any).message === "string"
+          ? (error as any).message
+          : "";
+      toast.error(message ? `ছবি আপলোড করা যায়নি: ${message}` : "ছবি আপলোড করা যায়নি");
     } finally {
       setHeroUploading(false);
       event.target.value = "";

@@ -51,7 +51,8 @@ const ImageUpload = ({ value, onChange, folder = "general", bucket = "cms-images
       toast.success("ছবি আপলোড হয়েছে");
     } catch (error: any) {
       console.error("Upload error:", error);
-      toast.error("আপলোড করা যায়নি");
+      const message = error && typeof error.message === "string" ? error.message : "";
+      toast.error(message ? `আপলোড করা যায়নি: ${message}` : "আপলোড করা যায়নি");
     } finally {
       setUploading(false);
     }

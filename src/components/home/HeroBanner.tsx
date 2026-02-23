@@ -120,7 +120,7 @@ const HeroBanner = () => {
 
   return (
     <section className="relative overflow-hidden">
-      <div className="relative h-[300px] sm:h-[400px] md:h-[500px]">
+      <div className="relative h-[260px] sm:h-[360px] md:h-[480px] lg:h-[560px]">
         {banners.map((banner, index) => (
           <div
             key={banner.id}
@@ -128,15 +128,15 @@ const HeroBanner = () => {
               index === currentSlide ? "opacity-100" : "opacity-0"
             }`}
           >
-            {/* Background Image */}
-            <div
-              className="absolute inset-0 bg-cover bg-center"
-              style={{ backgroundImage: `url(${banner.image_url})` }}
-            >
+            <div className="absolute inset-0">
+              <img
+                src={banner.image_url}
+                alt={banner.title_bn}
+                className="w-full h-full object-cover object-center"
+              />
               <div className="absolute inset-0 bg-gradient-to-r from-foreground/80 via-foreground/50 to-transparent" />
             </div>
 
-            {/* Content */}
             <div className="container relative h-full flex items-center">
               <div className="max-w-lg text-primary-foreground space-y-4 animate-fade-in">
                 <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold leading-tight">
