@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type ChangeEvent } from "react";
 import {
   Calendar as CalendarIcon,
   Save,
@@ -49,6 +49,12 @@ const HelpLabel = ({ id, label, help }: HelpLabelProps) => (
   </div>
 );
 
+interface HeroImage {
+  id: string;
+  image_path: string;
+  is_active: boolean | null;
+}
+
 const AdminGeneralSettings = () => {
   const { data: siteConfig, isLoading } = useSiteConfig();
   const updateSiteConfig = useUpdateSiteConfig();
@@ -84,6 +90,113 @@ const AdminGeneralSettings = () => {
     footer_copyright: "",
   });
   const [testimonials, setTestimonials] = useState<any[]>([]);
+
+  const [heroImages, setHeroImages] = useState<HeroImage[]>([]);
+  const [heroLoading, setHeroLoading] = useState(false);
+  const [heroUploading, setHeroUploading] = useState(false);
+
+  const fetchHeroImages = async () => {
+    setHeroLoading(true);
+    const { data, error } = await supabase
+      .from("hero_images")
+      .select("*")
+      .order("created_at", { ascending: false });
+    if (error) {
+      console.error(error);
+      toast.error("হিরো ছবি লোড করা যায়নি");
+    } else {
+      setHeroImages((data || []) as HeroImage[]);
+    }
+    setHeroLoading(false);
+  };
+
+  useEffect(() => {
+    fetchHeroImages();
+  }, []);
+
+  const handleHeroUpload = async (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      toast.error("শুধুমাত্র ছবি আপলোড করা যাবে");
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("ছবির সাইজ ৫MB এর বেশি হতে পারবে না");
+      return;
+    }
+
+    setHeroUploading(true);
+
+    try {
+      const ext = file.name.split(".").pop();
+      const fileName = `hero/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from("hero-assets")
+        .upload(fileName, file);
+      if (uploadError) throw uploadError;
+
+      const { data, error } = await supabase
+        .from("hero_images")
+        .insert({ image_path: fileName, is_active: true })
+        .select("*")
+        .single();
+      if (error) throw error;
+
+      setHeroImages((prev) => [data as HeroImage, ...prev]);
+      toast.success("হিরো ছবি আপলোড হয়েছে");
+    } catch (error) {
+      console.error(error);
+      toast.error("ছবি আপলোড করা যায়নি");
+    } finally {
+      setHeroUploading(false);
+      event.target.value = "";
+    }
+  };
+
+  const handleHeroToggle = async (id: string, isActive: boolean) => {
+    const { error } = await supabase
+      .from("hero_images")
+      .update({ is_active: isActive })
+      .eq("id", id);
+    if (error) {
+      console.error(error);
+      toast.error("স্ট্যাটাস আপডেট করা যায়নি");
+      return;
+    }
+    setHeroImages((prev) =>
+      prev.map((img) => (img.id === id ? { ...img, is_active: isActive } : img)),
+    );
+  };
+
+  const handleHeroDelete = async (image: HeroImage) => {
+    try {
+      const { error: storageError } = await supabase.storage
+        .from("hero-assets")
+        .remove([image.image_path]);
+      if (storageError) throw storageError;
+
+      const { error } = await supabase
+        .from("hero_images")
+        .delete()
+        .eq("id", image.id);
+      if (error) throw error;
+
+      setHeroImages((prev) => prev.filter((img) => img.id !== image.id));
+      toast.success("ছবি ডিলিট হয়েছে");
+    } catch (error) {
+      console.error(error);
+      toast.error("ছবি ডিলিট করা যায়নি");
+    }
+  };
+
+  const getHeroPublicUrl = (path: string) => {
+    const { data } = supabase.storage.from("hero-assets").getPublicUrl(path);
+    return data.publicUrl;
+  };
 
   useEffect(() => {
     if (!siteConfig) return;
@@ -388,7 +501,7 @@ const AdminGeneralSettings = () => {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
-                  <Label>Hero Image</Label>
+                  <Label>Hero Image (Fallback)</Label>
                   <ImageUpload
                     value={form.hero_image_url}
                     onChange={(value) => setForm({ ...form, hero_image_url: value })}
@@ -418,6 +531,85 @@ const AdminGeneralSettings = () => {
               </CardContent>
             </Card>
           </div>
+
+          <Card className="mt-6">
+            <CardHeader>
+              <CardTitle>Hero Images Gallery</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center justify-between mb-4">
+                <p className="text-sm text-muted-foreground">
+                  একাধিক হিরো ছবি upload করে এখানে manage করুন।
+                </p>
+                <div>
+                  <input
+                    id="hero-image-upload-settings"
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handleHeroUpload}
+                  />
+                  <Button
+                    type="button"
+                    className="gap-2"
+                    disabled={heroUploading}
+                    onClick={() =>
+                      (document.getElementById(
+                        "hero-image-upload-settings",
+                      ) as HTMLInputElement | null)?.click()
+                    }
+                  >
+                    {heroUploading ? "আপলোড হচ্ছে..." : "Upload Image"}
+                  </Button>
+                </div>
+              </div>
+
+              {heroLoading ? (
+                <p>লোড হচ্ছে...</p>
+              ) : heroImages.length === 0 ? (
+                <p className="text-muted-foreground text-sm">
+                  এখনো কোনো হিরো ছবি যোগ করা হয়নি।
+                </p>
+              ) : (
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                  {heroImages.map((image) => (
+                    <div
+                      key={image.id}
+                      className="relative rounded-lg border overflow-hidden"
+                    >
+                      <img
+                        src={getHeroPublicUrl(image.image_path)}
+                        alt="Hero"
+                        className="w-full h-32 object-cover"
+                      />
+                      <div className="flex items-center justify-between px-2 py-2 border-t bg-background/80">
+                        <div className="flex items-center gap-2">
+                          <Switch
+                            checked={!!image.is_active}
+                            onCheckedChange={(v) =>
+                              handleHeroToggle(image.id, v)
+                            }
+                          />
+                          <span className="text-xs text-muted-foreground">
+                            {image.is_active ? "Active" : "Inactive"}
+                          </span>
+                        </div>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="text-destructive"
+                          onClick={() => handleHeroDelete(image)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </TabsContent>
 
         <TabsContent value="marketing">
