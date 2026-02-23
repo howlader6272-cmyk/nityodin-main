@@ -387,15 +387,7 @@ const AdminGeneralSettings = () => {
                 <CardTitle>Hero Media & CTA</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label>Hero Image</Label>
-                  <ImageUpload
-                    value={form.hero_image_url}
-                    onChange={(value) => setForm({ ...form, hero_image_url: value })}
-                    folder="hero"
-                    bucket="site-assets"
-                  />
-                </div>
+                {/* Hero image is now managed via Hero Images gallery page */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="cta-text">CTA Text</Label>

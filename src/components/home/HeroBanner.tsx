@@ -18,47 +18,54 @@ const HeroBanner = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const { data: siteConfig } = useSiteConfig();
 
-  const { data: heroBanners } = useQuery({
-    queryKey: ["hero-banners"],
+  const { data: heroImages } = useQuery({
+    queryKey: ["hero-images-active"],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("banners")
+        .from("hero_images")
         .select("*")
         .eq("is_active", true)
-        .eq("position", "hero")
-        .order("sort_order", { ascending: true });
+        .order("created_at", { ascending: true });
       if (error) throw error;
-      return data;
+      return data as { id: string; image_path: string }[] | null;
     },
   });
 
   const banners: Banner[] = useMemo(() => {
-    const fromBanners: Banner[] =
-      heroBanners?.map((b: any) => ({
-        id: b.id,
-        title_bn: b.title_bn || b.title || "",
-        subtitle_bn: b.subtitle_bn || b.subtitle || "",
-        image_url: b.image_url,
-        link_url: b.link_url || "",
-      })) ?? [];
+    const title = siteConfig?.hero_title || "";
+    const subtitle = siteConfig?.hero_subtitle || "";
+    const link = siteConfig?.cta_link || "";
 
-    if (fromBanners.length > 0) {
-      return fromBanners;
+    const fromHeroImages: Banner[] =
+      heroImages?.map((img) => {
+        const { data } = supabase.storage.from("hero-assets").getPublicUrl(img.image_path);
+        return {
+          id: img.id,
+          title_bn: title,
+          subtitle_bn: subtitle,
+          image_url: data.publicUrl,
+          link_url: link,
+        };
+      }) ?? [];
+
+    if (fromHeroImages.length > 0) {
+      return fromHeroImages;
     }
 
-    if (!siteConfig) return [];
-    if (!siteConfig.hero_title && !siteConfig.hero_image_url) return [];
+    if (!siteConfig || !siteConfig.hero_image_url) {
+      return [];
+    }
 
     return [
       {
         id: "site-config",
-        title_bn: siteConfig.hero_title || "",
-        subtitle_bn: siteConfig.hero_subtitle || "",
-        image_url: siteConfig.hero_image_url || "",
-        link_url: siteConfig.cta_link || "",
+        title_bn: title,
+        subtitle_bn: subtitle,
+        image_url: siteConfig.hero_image_url,
+        link_url: link,
       },
     ];
-  }, [heroBanners, siteConfig]);
+  }, [heroImages, siteConfig]);
 
   const hasMultipleSlides = banners.length > 1;
 

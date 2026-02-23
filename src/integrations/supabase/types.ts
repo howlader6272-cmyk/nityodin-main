@@ -112,6 +112,27 @@ export type Database = {
         }
         Relationships: []
       }
+      hero_images: {
+        Row: {
+          created_at: string
+          id: string
+          image_path: string
+          is_active: boolean | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          image_path: string
+          is_active?: boolean | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          image_path?: string
+          is_active?: boolean | null
+        }
+        Relationships: []
+      }
       blog_posts: {
         Row: {
           author: string | null

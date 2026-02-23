@@ -76,12 +76,13 @@ const AdminLayout = () => {
       ],
     },
     { icon: MessageCircle, label: "লাইভ চ্যাট", href: "/admin/chat" },
-    { 
-      icon: FileText, 
-      label: "কন্টেন্ট", 
+    {
+      icon: FileText,
+      label: "কন্টেন্ট",
       href: "/admin/content",
       children: [
         { icon: Image, label: "ব্যানার", href: "/admin/banners" },
+        { icon: Image, label: "হিরো ইমেজ", href: "/admin/hero-images" },
       ],
     },
     { icon: SlidersHorizontal, label: "General Settings", href: "/admin/general-settings" },

@@ -40,6 +40,7 @@ import AdminCustomers from "./pages/admin/Customers";
 import AdminCoupons from "./pages/admin/Coupons";
 import AdminDeliveryZones from "./pages/admin/DeliveryZones";
 import AdminBanners from "./pages/admin/Banners";
+import AdminHeroImages from "./pages/admin/HeroImages";
 import AdminSettings from "./pages/admin/Settings";
 import AdminGeneralSettings from "./pages/admin/GeneralSettings";
 import AdminChat from "./pages/admin/Chat";
@@ -250,6 +251,7 @@ const App = () => (
                 <Route path="coupons" element={<AdminCoupons />} />
                 <Route path="delivery-zones" element={<AdminDeliveryZones />} />
                 <Route path="banners" element={<AdminBanners />} />
+          <Route path="hero-images" element={<AdminHeroImages />} />
                 <Route path="settings" element={<AdminSettings />} />
                 <Route path="general-settings" element={<AdminGeneralSettings />} />
                 <Route path="chat" element={<AdminChat />} />
