@@ -774,6 +774,264 @@ export type Database = {
           },
         ]
       }
+      payment_activity_logs: {
+        Row: {
+          action: string
+          created_at: string
+          details: Json | null
+          gateway_id: string | null
+          id: string
+          transaction_id: string | null
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          details?: Json | null
+          gateway_id?: string | null
+          id?: string
+          transaction_id?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          details?: Json | null
+          gateway_id?: string | null
+          id?: string
+          transaction_id?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      payment_gateways: {
+        Row: {
+          api_base_url: string
+          created_at: string
+          currency: string
+          environment: string
+          id: string
+          is_active: boolean
+          is_default: boolean
+          name: string
+          public_key: string | null
+          secret_key_encrypted: string | null
+          webhook_secret_encrypted: string | null
+          webhook_url: string | null
+          updated_at: string
+        }
+        Insert: {
+          api_base_url: string
+          created_at?: string
+          currency: string
+          environment?: string
+          id?: string
+          is_active?: boolean
+          is_default?: boolean
+          name: string
+          public_key?: string | null
+          secret_key_encrypted?: string | null
+          webhook_secret_encrypted?: string | null
+          webhook_url?: string | null
+          updated_at?: string
+        }
+        Update: {
+          api_base_url?: string
+          created_at?: string
+          currency?: string
+          environment?: string
+          id?: string
+          is_active?: boolean
+          is_default?: boolean
+          name?: string
+          public_key?: string | null
+          secret_key_encrypted?: string | null
+          webhook_secret_encrypted?: string | null
+          webhook_url?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      payment_transactions: {
+        Row: {
+          amount: number
+          created_at: string
+          currency: string
+          error_message: string | null
+          gateway_id: string | null
+          id: string
+          is_refunded: boolean
+          manual_approved: boolean
+          metadata: Json | null
+          order_id: string | null
+          payment_method: string | null
+          provider_transaction_id: string | null
+          raw_request: Json | null
+          raw_response: Json | null
+          status: Database["public"]["Enums"]["payment_transaction_status"]
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          currency: string
+          error_message?: string | null
+          gateway_id?: string | null
+          id?: string
+          is_refunded?: boolean
+          manual_approved?: boolean
+          metadata?: Json | null
+          order_id?: string | null
+          payment_method?: string | null
+          provider_transaction_id?: string | null
+          raw_request?: Json | null
+          raw_response?: Json | null
+          status?: Database["public"]["Enums"]["payment_transaction_status"]
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          currency?: string
+          error_message?: string | null
+          gateway_id?: string | null
+          id?: string
+          is_refunded?: boolean
+          manual_approved?: boolean
+          metadata?: Json | null
+          order_id?: string | null
+          payment_method?: string | null
+          provider_transaction_id?: string | null
+          raw_request?: Json | null
+          raw_response?: Json | null
+          status?: Database["public"]["Enums"]["payment_transaction_status"]
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_transactions_gateway_id_fkey"
+            columns: ["gateway_id"]
+            isOneToOne: false
+            referencedRelation: "payment_gateways"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payment_transactions_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      subscription_plans: {
+        Row: {
+          created_at: string
+          currency: string
+          description: string | null
+          id: string
+          interval: Database["public"]["Enums"]["subscription_interval"]
+          interval_count: number
+          is_active: boolean
+          metadata: Json | null
+          name: string
+          price: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          currency: string
+          description?: string | null
+          id?: string
+          interval: Database["public"]["Enums"]["subscription_interval"]
+          interval_count?: number
+          is_active?: boolean
+          metadata?: Json | null
+          name: string
+          price: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          currency?: string
+          description?: string | null
+          id?: string
+          interval?: Database["public"]["Enums"]["subscription_interval"]
+          interval_count?: number
+          is_active?: boolean
+          metadata?: Json | null
+          name?: string
+          price?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      subscriptions: {
+        Row: {
+          auto_renew: boolean
+          cancel_at_period_end: boolean
+          created_at: string
+          current_period_end: string
+          current_period_start: string
+          ended_at: string | null
+          id: string
+          last_payment_transaction_id: string | null
+          metadata: Json | null
+          plan_id: string | null
+          status: Database["public"]["Enums"]["subscription_status"]
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          auto_renew?: boolean
+          cancel_at_period_end?: boolean
+          created_at?: string
+          current_period_end: string
+          current_period_start: string
+          ended_at?: string | null
+          id?: string
+          last_payment_transaction_id?: string | null
+          metadata?: Json | null
+          plan_id?: string | null
+          status?: Database["public"]["Enums"]["subscription_status"]
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          auto_renew?: boolean
+          cancel_at_period_end?: boolean
+          created_at?: string
+          current_period_end?: string
+          current_period_start?: string
+          ended_at?: string | null
+          id?: string
+          last_payment_transaction_id?: string | null
+          metadata?: Json | null
+          plan_id?: string | null
+          status?: Database["public"]["Enums"]["subscription_status"]
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subscriptions_last_payment_transaction_id_fkey"
+            columns: ["last_payment_transaction_id"]
+            isOneToOne: false
+            referencedRelation: "payment_transactions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "subscriptions_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "subscription_plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       page_contents: {
         Row: {
           content: Json | null
@@ -1234,6 +1492,9 @@ export type Database = {
         | "refunded"
       payment_method: "cod" | "uddoktapay" | "bkash" | "nagad"
       payment_status: "unpaid" | "partial" | "paid" | "refunded"
+      payment_transaction_status: "pending" | "success" | "failed" | "refunded" | "cancelled"
+      subscription_interval: "monthly" | "yearly"
+      subscription_status: "active" | "past_due" | "cancelled" | "expired"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1373,6 +1634,9 @@ export const Constants = {
       ],
       payment_method: ["cod", "uddoktapay", "bkash", "nagad"],
       payment_status: ["unpaid", "partial", "paid", "refunded"],
+      payment_transaction_status: ["pending", "success", "failed", "refunded", "cancelled"],
+      subscription_interval: ["monthly", "yearly"],
+      subscription_status: ["active", "past_due", "cancelled", "expired"],
     },
   },
 } as const

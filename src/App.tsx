@@ -48,6 +48,7 @@ import AdminIncompleteOrders from "./pages/admin/IncompleteOrders";
 import AdminRecoveryAnalytics from "./pages/admin/RecoveryAnalytics";
 import AdminContent from "./pages/admin/Content";
 import AdminPayments from "./pages/admin/Payments";
+import AdminPaymentGateways from "./pages/admin/PaymentGateways";
 import AdminNewProduct from "./pages/admin/NewProduct";
 import LiveChatWidget from "./components/chat/LiveChatWidget";
 import { useSiteConfig } from "@/hooks/useAdminData";
@@ -258,6 +259,7 @@ const App = () => (
                 <Route path="incomplete-orders" element={<AdminIncompleteOrders />} />
                 <Route path="recovery-analytics" element={<AdminRecoveryAnalytics />} />
                 <Route path="payments" element={<AdminPayments />} />
+                <Route path="payment-gateways" element={<AdminPaymentGateways />} />
                 <Route path="content" element={<AdminContent />} />
                 <Route path="products/new" element={<AdminNewProduct />} />
               </Route>

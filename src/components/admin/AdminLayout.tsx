@@ -61,6 +61,7 @@ const AdminLayout = () => {
         { icon: AlertCircle, label: "অসম্পূর্ণ অর্ডার", href: "/admin/incomplete-orders" },
         { icon: TrendingUp, label: "রিকভারি অ্যানালিটিক্স", href: "/admin/recovery-analytics" },
         { icon: CreditCard, label: "পেমেন্ট", href: "/admin/payments" },
+        { icon: CreditCard, label: "পেমেন্ট গেটওয়ে", href: "/admin/payment-gateways" },
         { icon: Users, label: "কাস্টমার", href: "/admin/customers" },
       ],
     },
