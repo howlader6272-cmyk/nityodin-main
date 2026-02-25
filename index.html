@@ -90,14 +90,35 @@
       (function() {
         try {
           const config = JSON.parse(localStorage.getItem('site-config'));
-          if (config && config.favicon_url) {
+          if (!config) return;
+
+          // Instant Favicon
+          if (config.favicon_url) {
             const link = document.createElement('link');
             link.rel = 'icon';
             link.href = config.favicon_url;
             document.head.appendChild(link);
           }
-          if (config && config.site_title) {
+
+          // Instant Title
+          if (config.site_title) {
             document.title = config.site_title;
+          }
+
+          // Instant Meta Tags
+          if (config.site_description) {
+            let meta = document.querySelector('meta[name="description"]');
+            if (meta) meta.setAttribute("content", config.site_description);
+          }
+          if (config.meta_keywords) {
+            let meta = document.querySelector('meta[name="keywords"]');
+            if (meta) meta.setAttribute("content", config.meta_keywords);
+          }
+          if (config.og_image_url) {
+            let metaOg = document.querySelector('meta[property="og:image"]');
+            if (metaOg) metaOg.setAttribute("content", config.og_image_url);
+            let metaTwitter = document.querySelector('meta[property="twitter:image"]');
+            if (metaTwitter) metaTwitter.setAttribute("content", config.og_image_url);
           }
         } catch (e) {}
       })();

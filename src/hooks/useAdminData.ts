@@ -369,6 +369,14 @@ export const useUpdateSiteSettings = () => {
 export const useSiteConfig = () => {
   return useQuery({
     queryKey: ["site-config"],
+    initialData: () => {
+      try {
+        const cached = localStorage.getItem("site-config");
+        return cached ? JSON.parse(cached) : undefined;
+      } catch (e) {
+        return undefined;
+      }
+    },
     queryFn: async () => {
       const { data, error } = await supabase
         .from("site_config")
@@ -396,8 +404,12 @@ export const useUpdateSiteConfig = () => {
       const { error } = await supabase.from("site_config").insert(updates);
       if (error) throw error;
     },
-    onSuccess: () => {
+    onSuccess: (data, variables) => {
       queryClient.invalidateQueries({ queryKey: ["site-config"] });
+      // Update local storage cache immediately with the variables sent to the mutation
+      // Note: variables might not contain everything, so this is a partial update
+      const currentConfig = JSON.parse(localStorage.getItem("site-config") || "{}");
+      localStorage.setItem("site-config", JSON.stringify({ ...currentConfig, ...variables }));
       toast.success("সেটিংস সংরক্ষিত হয়েছে");
     },
     onError: (error) => {
