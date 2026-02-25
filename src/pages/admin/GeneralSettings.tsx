@@ -228,6 +228,7 @@ const AdminGeneralSettings = () => {
         if (error) throw error;
 
         setHeroImages((prev) => [data as HeroImage, ...prev]);
+        queryClient.invalidateQueries({ queryKey: ["hero-images-active"] });
         toast.success("হিরো ছবি আপলোড হয়েছে");
       } else if (heroEditingImage) {
         const { error } = await supabase
@@ -925,18 +926,14 @@ const AdminGeneralSettings = () => {
                               if (value === (image.title_bn ?? "")) return;
                               try {
                                 console.log("Updating hero title:", image.id, value);
-                                const { error } = await supabase
+                                const { data: updatedData, error } = await supabase
                                   .from("hero_images")
                                   .update({ title_bn: value || null })
-                                  .eq("id", image.id);
-                                if (error) throw error;
-                                
-                                // Fetch fresh data to ensure local state matches DB
-                                const { data: updatedData } = await supabase
-                                  .from("hero_images")
-                                  .select("*")
                                   .eq("id", image.id)
+                                  .select()
                                   .single();
+                                
+                                if (error) throw error;
                                 
                                 if (updatedData) {
                                   setHeroImages(prev => 
@@ -972,18 +969,14 @@ const AdminGeneralSettings = () => {
                               if (value === (image.subtitle_bn ?? "")) return;
                               try {
                                 console.log("Updating hero subtitle:", image.id, value);
-                                const { error } = await supabase
+                                const { data: updatedData, error } = await supabase
                                   .from("hero_images")
                                   .update({ subtitle_bn: value || null })
-                                  .eq("id", image.id);
-                                if (error) throw error;
-                                
-                                // Fetch fresh data
-                                const { data: updatedData } = await supabase
-                                  .from("hero_images")
-                                  .select("*")
                                   .eq("id", image.id)
+                                  .select()
                                   .single();
+                                
+                                if (error) throw error;
                                 
                                 if (updatedData) {
                                   setHeroImages(prev => 
@@ -1019,18 +1012,14 @@ const AdminGeneralSettings = () => {
                               if (value === (image.cta_text ?? "")) return;
                               try {
                                 console.log("Updating hero CTA text:", image.id, value);
-                                const { error } = await supabase
+                                const { data: updatedData, error } = await supabase
                                   .from("hero_images")
                                   .update({ cta_text: value || null })
-                                  .eq("id", image.id);
-                                if (error) throw error;
-                                
-                                // Fetch fresh data
-                                const { data: updatedData } = await supabase
-                                  .from("hero_images")
-                                  .select("*")
                                   .eq("id", image.id)
+                                  .select()
                                   .single();
+                                
+                                if (error) throw error;
                                 
                                 if (updatedData) {
                                   setHeroImages(prev => 
@@ -1066,18 +1055,14 @@ const AdminGeneralSettings = () => {
                               if (value === (image.cta_link ?? "")) return;
                               try {
                                 console.log("Updating hero CTA link:", image.id, value);
-                                const { error } = await supabase
+                                const { data: updatedData, error } = await supabase
                                   .from("hero_images")
                                   .update({ cta_link: value || null })
-                                  .eq("id", image.id);
-                                if (error) throw error;
-                                
-                                // Fetch fresh data
-                                const { data: updatedData } = await supabase
-                                  .from("hero_images")
-                                  .select("*")
                                   .eq("id", image.id)
+                                  .select()
                                   .single();
+                                
+                                if (error) throw error;
                                 
                                 if (updatedData) {
                                   setHeroImages(prev => 

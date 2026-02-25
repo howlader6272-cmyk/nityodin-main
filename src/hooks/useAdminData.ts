@@ -400,19 +400,28 @@ export const useUpdateSiteConfig = () => {
   return useMutation({
     mutationFn: async ({ id, ...updates }: { id?: string; [key: string]: any }) => {
       if (id) {
-        const { error } = await supabase.from("site_config").update(updates).eq("id", id);
+        const { data, error } = await supabase
+          .from("site_config")
+          .update(updates)
+          .eq("id", id)
+          .select()
+          .single();
         if (error) throw error;
-        return;
+        return data;
       }
-      const { error } = await supabase.from("site_config").insert(updates);
+      const { data, error } = await supabase
+        .from("site_config")
+        .insert(updates)
+        .select()
+        .single();
       if (error) throw error;
+      return data;
     },
-    onSuccess: (data, variables) => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["site-config"] });
-      // Update local storage cache immediately with the variables sent to the mutation
-      // Note: variables might not contain everything, so this is a partial update
-      const currentConfig = JSON.parse(localStorage.getItem("site-config") || "{}");
-      localStorage.setItem("site-config", JSON.stringify({ ...currentConfig, ...variables }));
+      if (data) {
+        localStorage.setItem("site-config", JSON.stringify(data));
+      }
       toast.success("সেটিংস সংরক্ষিত হয়েছে");
     },
     onError: (error) => {

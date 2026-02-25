@@ -16,7 +16,11 @@ serve(async (req) => {
   }
 
   try {
-    const { action, ...data } = await req.json();
+    const { action, gatewayConfig, ...data } = await req.json();
+
+    // Determine API credentials: prioritize gatewayConfig from request, fallback to env
+    const apiBaseUrl = gatewayConfig?.api_base_url || UDDOKTAPAY_BASE_URL;
+    const apiKey = gatewayConfig?.secret_key_encrypted || UDDOKTAPAY_API_KEY;
 
     if (action === "create-charge") {
       // Create a new payment charge
@@ -30,12 +34,12 @@ serve(async (req) => {
         cancelUrl 
       } = data;
 
-      const response = await fetch(`${UDDOKTAPAY_BASE_URL}/checkout-v2`, {
+      const response = await fetch(`${apiBaseUrl}/checkout-v2`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           "Accept": "application/json",
-          "RT-UDDOKTAPAY-API-KEY": UDDOKTAPAY_API_KEY,
+          "RT-UDDOKTAPAY-API-KEY": apiKey,
         },
         body: JSON.stringify({
           full_name: fullName,
@@ -80,12 +84,12 @@ serve(async (req) => {
       // Verify a payment
       const { invoiceId } = data;
 
-      const response = await fetch(`${UDDOKTAPAY_BASE_URL}/verify-payment`, {
+      const response = await fetch(`${apiBaseUrl}/verify-payment`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           "Accept": "application/json",
-          "RT-UDDOKTAPAY-API-KEY": UDDOKTAPAY_API_KEY,
+          "RT-UDDOKTAPAY-API-KEY": apiKey,
         },
         body: JSON.stringify({
           invoice_id: invoiceId,
