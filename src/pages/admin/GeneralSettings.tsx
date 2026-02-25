@@ -930,6 +930,7 @@ const AdminGeneralSettings = () => {
                                   .eq("id", image.id);
                                 if (error) throw error;
                                 queryClient.invalidateQueries({ queryKey: ["hero-images-active"] });
+                                toast.success("Heading সংরক্ষণ করা হয়েছে");
                               } catch (error) {
                                 console.error(error);
                                 toast.error("Heading সংরক্ষণ করা যায়নি");
@@ -961,6 +962,7 @@ const AdminGeneralSettings = () => {
                                   .eq("id", image.id);
                                 if (error) throw error;
                                 queryClient.invalidateQueries({ queryKey: ["hero-images-active"] });
+                                toast.success("Sub-heading সংরক্ষণ করা হয়েছে");
                               } catch (error) {
                                 console.error(error);
                                 toast.error("Sub-heading সংরক্ষণ করা যায়নি");
@@ -992,6 +994,7 @@ const AdminGeneralSettings = () => {
                                   .eq("id", image.id);
                                 if (error) throw error;
                                 queryClient.invalidateQueries({ queryKey: ["hero-images-active"] });
+                                toast.success("CTA Text সংরক্ষণ করা হয়েছে");
                               } catch (error) {
                                 console.error(error);
                                 toast.error("CTA text সংরক্ষণ করা যায়নি");
@@ -1023,6 +1026,7 @@ const AdminGeneralSettings = () => {
                                   .eq("id", image.id);
                                 if (error) throw error;
                                 queryClient.invalidateQueries({ queryKey: ["hero-images-active"] });
+                                toast.success("CTA Link সংরক্ষণ করা হয়েছে");
                               } catch (error) {
                                 console.error(error);
                                 toast.error("CTA link সংরক্ষণ করা যায়নি");
