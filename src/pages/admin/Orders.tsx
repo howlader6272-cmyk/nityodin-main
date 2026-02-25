@@ -6,6 +6,7 @@ import {
   MoreHorizontal,
   Plus,
   Truck,
+  Download,
   ExternalLink,
   Loader2,
   Wallet,
@@ -63,6 +64,7 @@ import { useCourierCheck, type ParsedCourierResult } from "@/hooks/useBDCourier"
 import { normalizeBDPhone } from "@/lib/phone";
 import { getFraudCached, setFraudCached, loadFraudCache, clearFraudCache } from "@/lib/bdcourierCache";
 import { OrderDialog } from "@/components/admin/dialogs/OrderDialog";
+import { useInvoiceDownload } from "@/hooks/useInvoiceDownload";
 import { Skeleton } from "@/components/ui/skeleton";
 import { format } from "date-fns";
 import { bn } from "date-fns/locale";
@@ -151,6 +153,7 @@ const AdminOrders = () => {
   const { data: steadfastBalance } = useSteadfastBalance();
   const checkStatus = useCheckSteadfastStatus();
   const courierCheck = useCourierCheck();
+  const { downloadInvoice } = useInvoiceDownload();
 
   // Background check for visible orders - uses normalized phone
   const checkRiskForPhone = useCallback(async (phone: string) => {
@@ -687,6 +690,10 @@ const AdminOrders = () => {
                           <DropdownMenuItem onClick={() => handleEdit(order)}>
                             <Eye className="h-4 w-4 mr-2" />
                             বিস্তারিত / এডিট
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => downloadInvoice(order.order_number)}>
+                            <Download className="h-4 w-4 mr-2" />
+                            ইনভয়েস ডাউনলোড
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />
                           <DropdownMenuItem 
