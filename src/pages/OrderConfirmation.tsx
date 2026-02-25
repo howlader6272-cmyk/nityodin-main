@@ -49,14 +49,17 @@ const OrderConfirmation = () => {
   const [copied, setCopied] = useState(false);
 
   // Decode order number from URL parameter
-  const decodedOrderNumber = orderNumber ? decodeURIComponent(orderNumber) : "";
-  const orderNumberWithHash = decodedOrderNumber.startsWith('#') ? decodedOrderNumber : `#${decodedOrderNumber}`;
+  const decodedOrderNumber = orderNumber ? decodeURIComponent(orderNumber).trim() : "";
+  const variations = [
+    decodedOrderNumber,
+    decodedOrderNumber.startsWith('#') ? decodedOrderNumber.slice(1) : `#${decodedOrderNumber}`
+  ];
 
   useEffect(() => {
     const fetchOrder = async () => {
       if (!decodedOrderNumber) return;
 
-      console.log("Fetching order details for confirmation:", orderNumberWithHash);
+      console.log("Fetching order details for confirmation. Variations:", variations);
 
       const { data, error } = await supabase
         .from("orders")
@@ -67,7 +70,7 @@ const OrderConfirmation = () => {
           discount_amount, total_amount, created_at, notes,
           order_items (product_name, variant_name, quantity, unit_price, total_price)
         `)
-        .eq("order_number", orderNumberWithHash)
+        .or(`order_number.eq."${variations[0]}",order_number.eq."${variations[1]}"`)
         .maybeSingle();
 
       if (error) {
@@ -81,11 +84,12 @@ const OrderConfirmation = () => {
     };
 
     fetchOrder();
-  }, [decodedOrderNumber, orderNumberWithHash]);
+  }, [decodedOrderNumber]);
 
   const copyOrderNumber = () => {
-    if (orderNumberWithHash) {
-      navigator.clipboard.writeText(orderNumberWithHash);
+    const displayNum = order?.order_number || decodedOrderNumber;
+    if (displayNum) {
+      navigator.clipboard.writeText(displayNum);
       setCopied(true);
       toast({ title: "কপি হয়েছে!", description: "অর্ডার নম্বর কপি করা হয়েছে" });
       setTimeout(() => setCopied(false), 2000);

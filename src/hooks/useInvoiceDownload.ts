@@ -34,12 +34,16 @@ export const useInvoiceDownload = () => {
   const { toast } = useToast();
 
   const fetchOrderWithItems = useCallback(async (orderNumber: string): Promise<Order | null> => {
-    // Clean order number - sometimes it might have spaces or double hashes
     const cleanOrderNumber = orderNumber.trim();
-    const orderNumberWithHash = cleanOrderNumber.startsWith('#') ? cleanOrderNumber : `#${cleanOrderNumber}`;
+    // Try multiple variations of the order number to be safe
+    const variations = [
+      cleanOrderNumber,
+      cleanOrderNumber.startsWith('#') ? cleanOrderNumber.slice(1) : `#${cleanOrderNumber}`
+    ];
     
-    console.log("Fetching order for invoice:", orderNumberWithHash);
+    console.log("Fetching order for invoice. Variations:", variations);
 
+    // Use .or() to search for any of the variations
     const { data: order, error } = await supabase
       .from("orders")
       .select(`
@@ -52,7 +56,7 @@ export const useInvoiceDownload = () => {
           total_price
         )
       `)
-      .eq("order_number", orderNumberWithHash)
+      .or(`order_number.eq."${variations[0]}",order_number.eq."${variations[1]}"`)
       .maybeSingle();
 
     if (error) {
@@ -66,10 +70,10 @@ export const useInvoiceDownload = () => {
     }
 
     if (!order) {
-      console.log("No order found for:", orderNumberWithHash);
+      console.log("No order found for variations:", variations);
       toast({
         title: "অর্ডার পাওয়া যায়নি",
-        description: `${orderNumberWithHash} নম্বর অর্ডারটি সিস্টেমে নেই।`,
+        description: `${cleanOrderNumber} নম্বর অর্ডারটি সিস্টেমে নেই।`,
         variant: "destructive",
       });
       return null;
