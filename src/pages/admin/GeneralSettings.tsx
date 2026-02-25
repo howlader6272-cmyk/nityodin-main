@@ -443,23 +443,41 @@ const AdminGeneralSettings = () => {
 
       <Tabs defaultValue="branding" className="space-y-6">
         <div className="-mx-1 px-1">
-          <TabsList className="grid w-full h-auto grid-cols-2 gap-2 sm:grid-cols-3 md:w-auto md:inline-flex md:h-10">
-            <TabsTrigger value="branding" className="text-xs sm:text-sm text-center py-2 whitespace-normal">
+          <TabsList className="flex flex-wrap w-full h-auto p-1 gap-1 bg-muted rounded-md md:inline-flex md:h-10 md:w-auto md:flex-nowrap">
+            <TabsTrigger 
+              value="branding" 
+              className="flex-grow basis-[48%] md:basis-auto text-[10px] sm:text-xs md:text-sm text-center py-2 px-1 whitespace-normal h-auto"
+            >
               Branding & SEO
             </TabsTrigger>
-            <TabsTrigger value="design" className="text-xs sm:text-sm text-center py-2 whitespace-normal">
+            <TabsTrigger 
+              value="design" 
+              className="flex-grow basis-[48%] md:basis-auto text-[10px] sm:text-xs md:text-sm text-center py-2 px-1 whitespace-normal h-auto"
+            >
               Design
             </TabsTrigger>
-            <TabsTrigger value="hero" className="text-xs sm:text-sm text-center py-2 whitespace-normal">
+            <TabsTrigger 
+              value="hero" 
+              className="flex-grow basis-[48%] md:basis-auto text-[10px] sm:text-xs md:text-sm text-center py-2 px-1 whitespace-normal h-auto"
+            >
               Hero & Promo
             </TabsTrigger>
-            <TabsTrigger value="tracking" className="text-xs sm:text-sm text-center py-2 whitespace-normal">
+            <TabsTrigger 
+              value="tracking" 
+              className="flex-grow basis-[48%] md:basis-auto text-[10px] sm:text-xs md:text-sm text-center py-2 px-1 whitespace-normal h-auto"
+            >
               Tracking & Scripts
             </TabsTrigger>
-            <TabsTrigger value="contact" className="text-xs sm:text-sm text-center py-2 whitespace-normal">
+            <TabsTrigger 
+              value="contact" 
+              className="flex-grow basis-[48%] md:basis-auto text-[10px] sm:text-xs md:text-sm text-center py-2 px-1 whitespace-normal h-auto"
+            >
               Contact & Footer
             </TabsTrigger>
-            <TabsTrigger value="testimonials" className="text-xs sm:text-sm text-center py-2 whitespace-normal">
+            <TabsTrigger 
+              value="testimonials" 
+              className="flex-grow basis-[48%] md:basis-auto text-[10px] sm:text-xs md:text-sm text-center py-2 px-1 whitespace-normal h-auto"
+            >
               Testimonials
             </TabsTrigger>
           </TabsList>
