@@ -924,15 +924,30 @@ const AdminGeneralSettings = () => {
                               const value = e.target.value;
                               if (value === (image.title_bn ?? "")) return;
                               try {
+                                console.log("Updating hero title:", image.id, value);
                                 const { error } = await supabase
                                   .from("hero_images")
                                   .update({ title_bn: value || null })
                                   .eq("id", image.id);
                                 if (error) throw error;
+                                
+                                // Fetch fresh data to ensure local state matches DB
+                                const { data: updatedData } = await supabase
+                                  .from("hero_images")
+                                  .select("*")
+                                  .eq("id", image.id)
+                                  .single();
+                                
+                                if (updatedData) {
+                                  setHeroImages(prev => 
+                                    prev.map(img => img.id === image.id ? (updatedData as HeroImage) : img)
+                                  );
+                                }
+                                
                                 queryClient.invalidateQueries({ queryKey: ["hero-images-active"] });
                                 toast.success("Heading সংরক্ষণ করা হয়েছে");
                               } catch (error) {
-                                console.error(error);
+                                console.error("Error updating hero title:", error);
                                 toast.error("Heading সংরক্ষণ করা যায়নি");
                               }
                             }}
@@ -956,15 +971,30 @@ const AdminGeneralSettings = () => {
                               const value = e.target.value;
                               if (value === (image.subtitle_bn ?? "")) return;
                               try {
+                                console.log("Updating hero subtitle:", image.id, value);
                                 const { error } = await supabase
                                   .from("hero_images")
                                   .update({ subtitle_bn: value || null })
                                   .eq("id", image.id);
                                 if (error) throw error;
+                                
+                                // Fetch fresh data
+                                const { data: updatedData } = await supabase
+                                  .from("hero_images")
+                                  .select("*")
+                                  .eq("id", image.id)
+                                  .single();
+                                
+                                if (updatedData) {
+                                  setHeroImages(prev => 
+                                    prev.map(img => img.id === image.id ? (updatedData as HeroImage) : img)
+                                  );
+                                }
+
                                 queryClient.invalidateQueries({ queryKey: ["hero-images-active"] });
                                 toast.success("Sub-heading সংরক্ষণ করা হয়েছে");
                               } catch (error) {
-                                console.error(error);
+                                console.error("Error updating hero subtitle:", error);
                                 toast.error("Sub-heading সংরক্ষণ করা যায়নি");
                               }
                             }}
@@ -988,15 +1018,30 @@ const AdminGeneralSettings = () => {
                               const value = e.target.value;
                               if (value === (image.cta_text ?? "")) return;
                               try {
+                                console.log("Updating hero CTA text:", image.id, value);
                                 const { error } = await supabase
                                   .from("hero_images")
                                   .update({ cta_text: value || null })
                                   .eq("id", image.id);
                                 if (error) throw error;
+                                
+                                // Fetch fresh data
+                                const { data: updatedData } = await supabase
+                                  .from("hero_images")
+                                  .select("*")
+                                  .eq("id", image.id)
+                                  .single();
+                                
+                                if (updatedData) {
+                                  setHeroImages(prev => 
+                                    prev.map(img => img.id === image.id ? (updatedData as HeroImage) : img)
+                                  );
+                                }
+
                                 queryClient.invalidateQueries({ queryKey: ["hero-images-active"] });
                                 toast.success("CTA Text সংরক্ষণ করা হয়েছে");
                               } catch (error) {
-                                console.error(error);
+                                console.error("Error updating hero CTA text:", error);
                                 toast.error("CTA text সংরক্ষণ করা যায়নি");
                               }
                             }}
@@ -1020,15 +1065,30 @@ const AdminGeneralSettings = () => {
                               const value = e.target.value;
                               if (value === (image.cta_link ?? "")) return;
                               try {
+                                console.log("Updating hero CTA link:", image.id, value);
                                 const { error } = await supabase
                                   .from("hero_images")
                                   .update({ cta_link: value || null })
                                   .eq("id", image.id);
                                 if (error) throw error;
+                                
+                                // Fetch fresh data
+                                const { data: updatedData } = await supabase
+                                  .from("hero_images")
+                                  .select("*")
+                                  .eq("id", image.id)
+                                  .single();
+                                
+                                if (updatedData) {
+                                  setHeroImages(prev => 
+                                    prev.map(img => img.id === image.id ? (updatedData as HeroImage) : img)
+                                  );
+                                }
+
                                 queryClient.invalidateQueries({ queryKey: ["hero-images-active"] });
                                 toast.success("CTA Link সংরক্ষণ করা হয়েছে");
                               } catch (error) {
-                                console.error(error);
+                                console.error("Error updating hero CTA link:", error);
                                 toast.error("CTA link সংরক্ষণ করা যায়নি");
                               }
                             }}
