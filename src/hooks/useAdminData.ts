@@ -376,6 +376,9 @@ export const useSiteConfig = () => {
         .limit(1)
         .maybeSingle();
       if (error) throw error;
+      if (data) {
+        localStorage.setItem("site-config", JSON.stringify(data));
+      }
       return data ?? null;
     },
   });

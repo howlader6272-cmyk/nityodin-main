@@ -104,6 +104,9 @@ const SiteConfigHead = () => {
       }
       link.setAttribute("href", siteConfig.favicon_url);
     }
+
+    // Cache config for instant load next time
+    localStorage.setItem("site-config", JSON.stringify(siteConfig));
   }, [siteConfig]);
 
   useEffect(() => {

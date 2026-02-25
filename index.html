@@ -86,7 +86,22 @@
     </script>
     <!-- End Meta Pixel Code -->
 
-    <link rel="icon" type="image/x-icon" href="https://storage.googleapis.com/gpt-engineer-file-uploads/Z1jpMvofgWN4lrKx2PaFFzkbsZF2/uploads/1768152864726-personal image.webp">
+    <script>
+      (function() {
+        try {
+          const config = JSON.parse(localStorage.getItem('site-config'));
+          if (config && config.favicon_url) {
+            const link = document.createElement('link');
+            link.rel = 'icon';
+            link.href = config.favicon_url;
+            document.head.appendChild(link);
+          }
+          if (config && config.site_title) {
+            document.title = config.site_title;
+          }
+        } catch (e) {}
+      })();
+    </script>
   </head>
 
   <body>
