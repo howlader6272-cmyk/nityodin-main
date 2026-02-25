@@ -443,23 +443,23 @@ const AdminGeneralSettings = () => {
 
       <Tabs defaultValue="branding" className="space-y-6">
         <div className="-mx-1 px-1">
-          <TabsList className="grid w-full grid-cols-2 gap-2 sm:grid-cols-3 md:w-auto md:inline-flex">
-            <TabsTrigger value="branding" className="text-xs sm:text-sm text-center">
+          <TabsList className="grid w-full h-auto grid-cols-2 gap-2 sm:grid-cols-3 md:w-auto md:inline-flex md:h-10">
+            <TabsTrigger value="branding" className="text-xs sm:text-sm text-center py-2 whitespace-normal">
               Branding & SEO
             </TabsTrigger>
-            <TabsTrigger value="design" className="text-xs sm:text-sm text-center">
+            <TabsTrigger value="design" className="text-xs sm:text-sm text-center py-2 whitespace-normal">
               Design
             </TabsTrigger>
-            <TabsTrigger value="hero" className="text-xs sm:text-sm text-center">
+            <TabsTrigger value="hero" className="text-xs sm:text-sm text-center py-2 whitespace-normal">
               Hero & Promo
             </TabsTrigger>
-            <TabsTrigger value="tracking" className="text-xs sm:text-sm text-center">
+            <TabsTrigger value="tracking" className="text-xs sm:text-sm text-center py-2 whitespace-normal">
               Tracking & Scripts
             </TabsTrigger>
-            <TabsTrigger value="contact" className="text-xs sm:text-sm text-center">
+            <TabsTrigger value="contact" className="text-xs sm:text-sm text-center py-2 whitespace-normal">
               Contact & Footer
             </TabsTrigger>
-            <TabsTrigger value="testimonials" className="text-xs sm:text-sm text-center">
+            <TabsTrigger value="testimonials" className="text-xs sm:text-sm text-center py-2 whitespace-normal">
               Testimonials
             </TabsTrigger>
           </TabsList>
