@@ -150,47 +150,60 @@ const HeroBanner = () => {
   return (
     <section className="relative overflow-hidden">
       <div className="relative h-[260px] sm:h-[360px] md:h-[480px] lg:h-[560px]">
-        {banners.map((banner, index) => (
-          <div
-            key={banner.id}
-            className={`absolute inset-0 transition-opacity duration-700 ${
-              index === currentSlide ? "opacity-100" : "opacity-0"
-            }`}
-          >
-            <div className="absolute inset-0">
-              <img
-                src={banner.image_url}
-                alt={banner.title_bn}
-                className="w-full h-full object-cover"
-                style={{
-                  objectPosition: `${banner.focus_x ?? 50}% ${banner.focus_y ?? 50}%`,
-                  transform: `scale(${banner.zoom ?? 1})`,
-                }}
-              />
-              <div className="absolute inset-0 bg-gradient-to-r from-foreground/80 via-foreground/50 to-transparent" />
-            </div>
+        {banners.map((banner, index) => {
+          const isExternal = banner.link_url?.startsWith("http");
+          const isActive = index === currentSlide;
 
-            <div className="container relative h-full flex items-center">
-              <div className="max-w-lg text-primary-foreground space-y-4 animate-fade-in">
-                <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold leading-tight">
-                  {banner.title_bn}
-                </h2>
-                {banner.subtitle_bn && (
-                  <p className="text-lg sm:text-xl opacity-90">
-                    {banner.subtitle_bn}
-                  </p>
-                )}
-                {banner.link_url && (
-                  <Link to={banner.link_url}>
-                    <Button size="lg" className="mt-4 bg-accent hover:bg-accent/90 text-accent-foreground shadow-hover">
-                      {banner.cta_text || siteConfig?.cta_text || "এখনই কিনুন"}
-                    </Button>
-                  </Link>
-                )}
+          return (
+            <div
+              key={banner.id}
+              className={`absolute inset-0 transition-opacity duration-700 ${
+                isActive ? "opacity-100 z-10 pointer-events-auto" : "opacity-0 z-0 pointer-events-none"
+              }`}
+            >
+              <div className="absolute inset-0">
+                <img
+                  src={banner.image_url}
+                  alt={banner.title_bn}
+                  className="w-full h-full object-cover"
+                  style={{
+                    objectPosition: `${banner.focus_x ?? 50}% ${banner.focus_y ?? 50}%`,
+                    transform: `scale(${banner.zoom ?? 1})`,
+                  }}
+                />
+                <div className="absolute inset-0 bg-gradient-to-r from-foreground/80 via-foreground/50 to-transparent" />
+              </div>
+
+              <div className="container relative h-full flex items-center">
+                <div className="max-w-lg text-primary-foreground space-y-4 animate-fade-in">
+                  <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold leading-tight">
+                    {banner.title_bn}
+                  </h2>
+                  {banner.subtitle_bn && (
+                    <p className="text-lg sm:text-xl opacity-90">
+                      {banner.subtitle_bn}
+                    </p>
+                  )}
+                  {banner.link_url && (
+                    isExternal ? (
+                      <a href={banner.link_url} target="_blank" rel="noopener noreferrer">
+                        <Button size="lg" className="mt-4 bg-accent hover:bg-accent/90 text-accent-foreground shadow-hover">
+                          {banner.cta_text || siteConfig?.cta_text || "এখনই কিনুন"}
+                        </Button>
+                      </a>
+                    ) : (
+                      <Link to={banner.link_url}>
+                        <Button size="lg" className="mt-4 bg-accent hover:bg-accent/90 text-accent-foreground shadow-hover">
+                          {banner.cta_text || siteConfig?.cta_text || "এখনই কিনুন"}
+                        </Button>
+                      </Link>
+                    )
+                  )}
+                </div>
               </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
 
         {hasMultipleSlides && (
           <>
