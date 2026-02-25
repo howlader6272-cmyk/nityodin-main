@@ -259,9 +259,14 @@ const AdminGeneralSettings = () => {
     );
   };
 
-  const handleHeroInputBlur = async (id: string, field: keyof HeroImage, value: any) => {
+  const handleHeroInputBlur = async (id: string, field: keyof HeroImage, value: string) => {
+    // Only update if there's actually a change or if we want to clear it
+    const currentValue = heroImages.find(img => img.id === id)?.[field];
+    if (currentValue === value) return;
+
     try {
-      await updateHeroImage.mutateAsync({ id, [field]: value || null });
+      console.log(`Saving ${field} for hero image ${id}:`, value);
+      await updateHeroImage.mutateAsync({ id, [field]: value.trim() || null });
       toast.success("পরিবর্তন সংরক্ষণ করা হয়েছে");
     } catch (error) {
       console.error(error);
@@ -854,8 +859,7 @@ const AdminGeneralSettings = () => {
                         <div className="space-y-1">
                           <Label className="text-xs">Heading</Label>
                           <Input
-                            value={image.title_bn ?? ""}
-                            onChange={(e) => handleHeroInputChange(image.id, "title_bn", e.target.value)}
+                            defaultValue={image.title_bn ?? ""}
                             onBlur={(e) => handleHeroInputBlur(image.id, "title_bn", e.target.value)}
                             placeholder="বিশেষ ছাড় চলছে!"
                             className="h-7 text-xs"
@@ -864,8 +868,7 @@ const AdminGeneralSettings = () => {
                         <div className="space-y-1">
                           <Label className="text-xs">Sub-heading</Label>
                           <Input
-                            value={image.subtitle_bn ?? ""}
-                            onChange={(e) => handleHeroInputChange(image.id, "subtitle_bn", e.target.value)}
+                            defaultValue={image.subtitle_bn ?? ""}
                             onBlur={(e) => handleHeroInputBlur(image.id, "subtitle_bn", e.target.value)}
                             placeholder="৩টি পণ্য কিনলে ৫% ছাড়..."
                             className="h-7 text-xs"
@@ -874,8 +877,7 @@ const AdminGeneralSettings = () => {
                         <div className="space-y-1">
                           <Label className="text-xs">CTA Text</Label>
                           <Input
-                            value={image.cta_text ?? ""}
-                            onChange={(e) => handleHeroInputChange(image.id, "cta_text", e.target.value)}
+                            defaultValue={image.cta_text ?? ""}
                             onBlur={(e) => handleHeroInputBlur(image.id, "cta_text", e.target.value)}
                             placeholder="যেমন: এখনই কিনুন"
                             className="h-7 text-xs"
@@ -884,8 +886,7 @@ const AdminGeneralSettings = () => {
                         <div className="space-y-1">
                           <Label className="text-xs">CTA Link</Label>
                           <Input
-                            value={image.cta_link ?? ""}
-                            onChange={(e) => handleHeroInputChange(image.id, "cta_link", e.target.value)}
+                            defaultValue={image.cta_link ?? ""}
                             onBlur={(e) => handleHeroInputBlur(image.id, "cta_link", e.target.value)}
                             placeholder="https://"
                             className="h-7 text-xs"
