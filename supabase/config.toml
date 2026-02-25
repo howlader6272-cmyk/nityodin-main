@@ -1,0 +1,13 @@
+project_id = "xryekrtzbektxxrhpwzt"
+
+[functions.uddoktapay-checkout]
+verify_jwt = false
+
+[functions.steadfast-courier]
+verify_jwt = false
+
+[functions.bdcourier-check]
+verify_jwt = false
+
+[functions.admin-create-user]
+verify_jwt = false

@@ -1,0 +1,3 @@
+ALTER TABLE public.hero_images
+  ADD COLUMN IF NOT EXISTS zoom NUMERIC(5,2) DEFAULT 1.0;
+
