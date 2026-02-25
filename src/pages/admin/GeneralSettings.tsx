@@ -18,7 +18,14 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import ImageUpload from "@/components/admin/ImageUpload";
-import { useSiteConfig, useUpdateSiteConfig } from "@/hooks/useAdminData";
+import {
+  useSiteConfig,
+  useUpdateSiteConfig,
+  useHeroImages,
+  useCreateHeroImage,
+  useUpdateHeroImage,
+  useDeleteHeroImage,
+} from "@/hooks/useAdminData";
 import { Switch } from "@/components/ui/switch";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -69,6 +76,12 @@ const AdminGeneralSettings = () => {
   const queryClient = useQueryClient();
   const { data: siteConfig, isLoading } = useSiteConfig();
   const updateSiteConfig = useUpdateSiteConfig();
+
+  const { data: heroImagesList, isLoading: heroLoading } = useHeroImages();
+  const createHeroImage = useCreateHeroImage();
+  const updateHeroImage = useUpdateHeroImage();
+  const deleteHeroImage = useDeleteHeroImage();
+
   const [form, setForm] = useState({
     logo_url: "",
     favicon_url: "",
@@ -102,8 +115,7 @@ const AdminGeneralSettings = () => {
   });
   const [testimonials, setTestimonials] = useState<any[]>([]);
 
-  const [heroImages, setHeroImages] = useState<HeroImage[]>([]);
-  const [heroLoading, setHeroLoading] = useState(false);
+  const heroImages = heroImagesList || [];
   const [heroUploading, setHeroUploading] = useState(false);
   const [heroCropOpen, setHeroCropOpen] = useState(false);
   const [heroCropPreview, setHeroCropPreview] = useState<string | null>(null);
@@ -117,21 +129,6 @@ const AdminGeneralSettings = () => {
   const [heroTitleBn, setHeroTitleBn] = useState("");
   const [heroSubtitleBn, setHeroSubtitleBn] = useState("");
 
-  const fetchHeroImages = async () => {
-    setHeroLoading(true);
-    const { data, error } = await supabase
-      .from("hero_images")
-      .select("*")
-      .order("created_at", { ascending: false });
-    if (error) {
-      console.error(error);
-      toast.error("হিরো ছবি লোড করা যায়নি");
-    } else {
-      setHeroImages((data || []) as HeroImage[]);
-    }
-    setHeroLoading(false);
-  };
-
   const syncFallbackHeroToHeroImages = async (url: string) => {
     if (!url) return;
 
@@ -143,28 +140,17 @@ const AdminGeneralSettings = () => {
     }
 
     try {
-      const { data, error } = await supabase
-        .from("hero_images")
-        .insert({
-          image_path: imagePath,
-          is_active: true,
-          focus_x: 50,
-          focus_y: 50,
-          zoom: 1,
-        })
-        .select("*")
-        .single();
-      if (error) throw error;
-
-      setHeroImages((prev) => [data as HeroImage, ...prev]);
+      await createHeroImage.mutateAsync({
+        image_path: imagePath,
+        is_active: true,
+        focus_x: 50,
+        focus_y: 50,
+        zoom: 1,
+      });
     } catch (error) {
       console.error(error);
     }
   };
-
-  useEffect(() => {
-    fetchHeroImages();
-  }, []);
 
   const handleHeroUpload = async (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -210,58 +196,28 @@ const AdminGeneralSettings = () => {
           .upload(fileName, heroCropFile);
         if (uploadError) throw uploadError;
 
-        const { data, error } = await supabase
-          .from("hero_images")
-          .insert({
-            image_path: fileName,
-            is_active: true,
-            focus_x: heroFocusX,
-            focus_y: heroFocusY,
-            zoom: heroZoom,
-            title_bn: heroTitleBn || null,
-            subtitle_bn: heroSubtitleBn || null,
-            cta_text: heroCtaText || null,
-            cta_link: heroCtaLink || null,
-          })
-          .select("*")
-          .single();
-        if (error) throw error;
-
-        setHeroImages((prev) => [data as HeroImage, ...prev]);
-        queryClient.invalidateQueries({ queryKey: ["hero-images-active"] });
-        toast.success("হিরো ছবি আপলোড হয়েছে");
+        await createHeroImage.mutateAsync({
+          image_path: fileName,
+          is_active: true,
+          focus_x: heroFocusX,
+          focus_y: heroFocusY,
+          zoom: heroZoom,
+          title_bn: heroTitleBn || null,
+          subtitle_bn: heroSubtitleBn || null,
+          cta_text: heroCtaText || null,
+          cta_link: heroCtaLink || null,
+        });
       } else if (heroEditingImage) {
-        const { error } = await supabase
-          .from("hero_images")
-          .update({
-            focus_x: heroFocusX,
-            focus_y: heroFocusY,
-            zoom: heroZoom,
-            title_bn: heroTitleBn || null,
-            subtitle_bn: heroSubtitleBn || null,
-            cta_text: heroCtaText || null,
-            cta_link: heroCtaLink || null,
-          })
-          .eq("id", heroEditingImage.id);
-        if (error) throw error;
-
-        setHeroImages((prev) =>
-          prev.map((img) =>
-            img.id === heroEditingImage.id
-              ? {
-                  ...img,
-                  focus_x: heroFocusX,
-                  focus_y: heroFocusY,
-                  zoom: heroZoom,
-                  title_bn: heroTitleBn || null,
-                  subtitle_bn: heroSubtitleBn || null,
-                  cta_text: heroCtaText || null,
-                  cta_link: heroCtaLink || null,
-                }
-              : img,
-          ),
-        );
-        queryClient.invalidateQueries({ queryKey: ["hero-images-active"] });
+        await updateHeroImage.mutateAsync({
+          id: heroEditingImage.id,
+          focus_x: heroFocusX,
+          focus_y: heroFocusY,
+          zoom: heroZoom,
+          title_bn: heroTitleBn || null,
+          subtitle_bn: heroSubtitleBn || null,
+          cta_text: heroCtaText || null,
+          cta_link: heroCtaLink || null,
+        });
         toast.success("হিরো ছবির crop আপডেট হয়েছে");
       }
 
@@ -290,41 +246,11 @@ const AdminGeneralSettings = () => {
   };
 
   const handleHeroToggle = async (id: string, isActive: boolean) => {
-    const { error } = await supabase
-      .from("hero_images")
-      .update({ is_active: isActive })
-      .eq("id", id);
-    if (error) {
-      console.error(error);
-      toast.error("স্ট্যাটাস আপডেট করা যায়নি");
-      return;
-    }
-    queryClient.invalidateQueries({ queryKey: ["hero-images-active"] });
-    setHeroImages((prev) =>
-      prev.map((img) => (img.id === id ? { ...img, is_active: isActive } : img)),
-    );
+    await updateHeroImage.mutateAsync({ id, is_active: isActive });
   };
 
   const handleHeroDelete = async (image: HeroImage) => {
-    try {
-      const { error: storageError } = await supabase.storage
-        .from("site-assets")
-        .remove([image.image_path]);
-      if (storageError) throw storageError;
-
-      const { error } = await supabase
-        .from("hero_images")
-        .delete()
-        .eq("id", image.id);
-      if (error) throw error;
-
-      queryClient.invalidateQueries({ queryKey: ["hero-images-active"] });
-      setHeroImages((prev) => prev.filter((img) => img.id !== image.id));
-      toast.success("ছবি ডিলিট হয়েছে");
-    } catch (error) {
-      console.error(error);
-      toast.error("ছবি ডিলিট করা যায়নি");
-    }
+    await deleteHeroImage.mutateAsync(image);
   };
 
   const getHeroPublicUrl = (path: string) => {
@@ -915,38 +841,15 @@ const AdminGeneralSettings = () => {
                             value={image.title_bn ?? ""}
                             onChange={(e) => {
                               const value = e.target.value;
-                              setHeroImages((prev) =>
-                                prev.map((img) =>
-                                  img.id === image.id ? { ...img, title_bn: value } : img,
-                                ),
+                              queryClient.setQueryData(["hero-images"], (prev: any) => 
+                                prev?.map((img: any) => img.id === image.id ? { ...img, title_bn: value } : img)
                               );
                             }}
                             onBlur={async (e) => {
                               const value = e.target.value;
                               if (value === (image.title_bn ?? "")) return;
-                              try {
-                                console.log("Updating hero title:", image.id, value);
-                                const { data: updatedData, error } = await supabase
-                                  .from("hero_images")
-                                  .update({ title_bn: value || null })
-                                  .eq("id", image.id)
-                                  .select()
-                                  .single();
-                                
-                                if (error) throw error;
-                                
-                                if (updatedData) {
-                                  setHeroImages(prev => 
-                                    prev.map(img => img.id === image.id ? (updatedData as HeroImage) : img)
-                                  );
-                                }
-                                
-                                queryClient.invalidateQueries({ queryKey: ["hero-images-active"] });
-                                toast.success("Heading সংরক্ষণ করা হয়েছে");
-                              } catch (error) {
-                                console.error("Error updating hero title:", error);
-                                toast.error("Heading সংরক্ষণ করা যায়নি");
-                              }
+                              await updateHeroImage.mutateAsync({ id: image.id, title_bn: value || null });
+                              toast.success("Heading সংরক্ষণ করা হয়েছে");
                             }}
                             placeholder="বিশেষ ছাড় চলছে!"
                             className="h-7 text-xs"
@@ -958,38 +861,15 @@ const AdminGeneralSettings = () => {
                             value={image.subtitle_bn ?? ""}
                             onChange={(e) => {
                               const value = e.target.value;
-                              setHeroImages((prev) =>
-                                prev.map((img) =>
-                                  img.id === image.id ? { ...img, subtitle_bn: value } : img,
-                                ),
+                              queryClient.setQueryData(["hero-images"], (prev: any) => 
+                                prev?.map((img: any) => img.id === image.id ? { ...img, subtitle_bn: value } : img)
                               );
                             }}
                             onBlur={async (e) => {
                               const value = e.target.value;
                               if (value === (image.subtitle_bn ?? "")) return;
-                              try {
-                                console.log("Updating hero subtitle:", image.id, value);
-                                const { data: updatedData, error } = await supabase
-                                  .from("hero_images")
-                                  .update({ subtitle_bn: value || null })
-                                  .eq("id", image.id)
-                                  .select()
-                                  .single();
-                                
-                                if (error) throw error;
-                                
-                                if (updatedData) {
-                                  setHeroImages(prev => 
-                                    prev.map(img => img.id === image.id ? (updatedData as HeroImage) : img)
-                                  );
-                                }
-
-                                queryClient.invalidateQueries({ queryKey: ["hero-images-active"] });
-                                toast.success("Sub-heading সংরক্ষণ করা হয়েছে");
-                              } catch (error) {
-                                console.error("Error updating hero subtitle:", error);
-                                toast.error("Sub-heading সংরক্ষণ করা যায়নি");
-                              }
+                              await updateHeroImage.mutateAsync({ id: image.id, subtitle_bn: value || null });
+                              toast.success("Sub-heading সংরক্ষণ করা হয়েছে");
                             }}
                             placeholder="৩টি পণ্য কিনলে ৫% ছাড়..."
                             className="h-7 text-xs"
@@ -1001,38 +881,15 @@ const AdminGeneralSettings = () => {
                             value={image.cta_text ?? ""}
                             onChange={(e) => {
                               const value = e.target.value;
-                              setHeroImages((prev) =>
-                                prev.map((img) =>
-                                  img.id === image.id ? { ...img, cta_text: value } : img,
-                                ),
+                              queryClient.setQueryData(["hero-images"], (prev: any) => 
+                                prev?.map((img: any) => img.id === image.id ? { ...img, cta_text: value } : img)
                               );
                             }}
                             onBlur={async (e) => {
                               const value = e.target.value;
                               if (value === (image.cta_text ?? "")) return;
-                              try {
-                                console.log("Updating hero CTA text:", image.id, value);
-                                const { data: updatedData, error } = await supabase
-                                  .from("hero_images")
-                                  .update({ cta_text: value || null })
-                                  .eq("id", image.id)
-                                  .select()
-                                  .single();
-                                
-                                if (error) throw error;
-                                
-                                if (updatedData) {
-                                  setHeroImages(prev => 
-                                    prev.map(img => img.id === image.id ? (updatedData as HeroImage) : img)
-                                  );
-                                }
-
-                                queryClient.invalidateQueries({ queryKey: ["hero-images-active"] });
-                                toast.success("CTA Text সংরক্ষণ করা হয়েছে");
-                              } catch (error) {
-                                console.error("Error updating hero CTA text:", error);
-                                toast.error("CTA text সংরক্ষণ করা যায়নি");
-                              }
+                              await updateHeroImage.mutateAsync({ id: image.id, cta_text: value || null });
+                              toast.success("CTA Text সংরক্ষণ করা হয়েছে");
                             }}
                             placeholder="যেমন: এখনই কিনুন"
                             className="h-7 text-xs"
@@ -1044,42 +901,20 @@ const AdminGeneralSettings = () => {
                             value={image.cta_link ?? ""}
                             onChange={(e) => {
                               const value = e.target.value;
-                              setHeroImages((prev) =>
-                                prev.map((img) =>
-                                  img.id === image.id ? { ...img, cta_link: value } : img,
-                                ),
+                              queryClient.setQueryData(["hero-images"], (prev: any) => 
+                                prev?.map((img: any) => img.id === image.id ? { ...img, cta_link: value } : img)
                               );
                             }}
                             onBlur={async (e) => {
                               const value = e.target.value;
                               if (value === (image.cta_link ?? "")) return;
-                              try {
-                                console.log("Updating hero CTA link:", image.id, value);
-                                const { data: updatedData, error } = await supabase
-                                  .from("hero_images")
-                                  .update({ cta_link: value || null })
-                                  .eq("id", image.id)
-                                  .select()
-                                  .single();
-                                
-                                if (error) throw error;
-                                
-                                if (updatedData) {
-                                  setHeroImages(prev => 
-                                    prev.map(img => img.id === image.id ? (updatedData as HeroImage) : img)
-                                  );
-                                }
-
-                                queryClient.invalidateQueries({ queryKey: ["hero-images-active"] });
-                                toast.success("CTA Link সংরক্ষণ করা হয়েছে");
-                              } catch (error) {
-                                console.error("Error updating hero CTA link:", error);
-                                toast.error("CTA link সংরক্ষণ করা যায়নি");
-                              }
+                              await updateHeroImage.mutateAsync({ id: image.id, cta_link: value || null });
+                              toast.success("CTA Link সংরক্ষণ করা হয়েছে");
                             }}
                             placeholder="https://"
                             className="h-7 text-xs"
                           />
+                        </div>
                         </div>
                       </div>
                     </div>

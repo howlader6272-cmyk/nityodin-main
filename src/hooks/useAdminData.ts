@@ -197,6 +197,88 @@ export const useDeleteCoupon = () => {
   });
 };
 
+// Hero Images
+export const useHeroImages = () => {
+  return useQuery({
+    queryKey: ["hero-images"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("hero_images")
+        .select("*")
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return data;
+    },
+  });
+};
+
+export const useCreateHeroImage = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (image: any) => {
+      const { data, error } = await supabase
+        .from("hero_images")
+        .insert(image)
+        .select()
+        .single();
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["hero-images"] });
+      queryClient.invalidateQueries({ queryKey: ["hero-images-active"] });
+      toast.success("হিরো ছবি যোগ হয়েছে");
+    },
+    onError: (error: any) => toast.error(error.message || "যোগ করা যায়নি"),
+  });
+};
+
+export const useUpdateHeroImage = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, ...updates }: { id: string; [key: string]: any }) => {
+      const { data, error } = await supabase
+        .from("hero_images")
+        .update(updates)
+        .eq("id", id)
+        .select()
+        .single();
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["hero-images"] });
+      queryClient.invalidateQueries({ queryKey: ["hero-images-active"] });
+    },
+    onError: (error: any) => toast.error(error.message || "আপডেট করা যায়নি"),
+  });
+};
+
+export const useDeleteHeroImage = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (image: { id: string; image_path: string }) => {
+      // First remove from storage
+      const { error: storageError } = await supabase.storage
+        .from("site-assets")
+        .remove([image.image_path]);
+      
+      // We still try to delete from DB even if storage removal fails (or if file was already gone)
+      const { error } = await supabase
+        .from("hero_images")
+        .delete()
+        .eq("id", image.id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["hero-images"] });
+      queryClient.invalidateQueries({ queryKey: ["hero-images-active"] });
+      toast.success("ছবি মুছে ফেলা হয়েছে");
+    },
+    onError: (error: any) => toast.error(error.message || "মুছে ফেলা যায়নি"),
+  });
+};
+
 // Delivery Zones
 export const useDeliveryZones = () => {
   return useQuery({
