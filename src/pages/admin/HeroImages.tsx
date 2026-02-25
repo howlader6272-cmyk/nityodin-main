@@ -61,6 +61,7 @@ const AdminHeroImages = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["hero-images"] });
+      queryClient.invalidateQueries({ queryKey: ["hero-images-active"] });
     },
     onError: () => toast.error("স্ট্যাটাস আপডেট করা যায়নি"),
   });
@@ -81,6 +82,7 @@ const AdminHeroImages = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["hero-images"] });
+      queryClient.invalidateQueries({ queryKey: ["hero-images-active"] });
       toast.success("ছবি ডিলিট হয়েছে");
     },
     onError: () => toast.error("ছবি ডিলিট করা যায়নি"),
@@ -152,6 +154,7 @@ const AdminHeroImages = () => {
           (prev: HeroImage[] | undefined) => [data as HeroImage, ...(prev ?? [])],
         );
 
+        queryClient.invalidateQueries({ queryKey: ["hero-images-active"] });
         toast.success("হিরো ছবি আপলোড হয়েছে");
       } else if (editingImage) {
         const { error } = await supabase
@@ -168,13 +171,8 @@ const AdminHeroImages = () => {
           .eq("id", editingImage.id);
         if (error) throw error;
 
-        queryClient.setQueryData(
-          { queryKey: ["hero-images"] },
-          (prev: HeroImage[] | undefined) =>
-            (prev ?? []).map((img) =>
-              img.id === editingImage.id ? { ...img, focus_x: focusX, focus_y: focusY, zoom } : img,
-            ),
-        );
+        queryClient.invalidateQueries({ queryKey: ["hero-images"] });
+        queryClient.invalidateQueries({ queryKey: ["hero-images-active"] });
 
         toast.success("হিরো ছবির crop আপডেট হয়েছে");
       }

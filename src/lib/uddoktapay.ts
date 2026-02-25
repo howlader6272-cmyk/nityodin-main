@@ -10,6 +10,10 @@ export interface CreateChargeParams {
   userId?: string;
   redirectUrl: string;
   cancelUrl: string;
+  config?: {
+    apiBaseUrl: string;
+    apiKey: string;
+  };
 }
 
 export interface CreateChargeResponse {
@@ -40,12 +44,15 @@ export interface VerifyPaymentResponse {
 // Client-side payment creation (directly calling UddoktaPay API)
 export async function createChargeClientSide(params: CreateChargeParams): Promise<CreateChargeResponse> {
   try {
-    const response = await fetch(`${UDDOKTAPAY_BASE_URL}/checkout-v2`, {
+    const baseUrl = params.config?.apiBaseUrl || "https://vibeable.paymently.io/api";
+    const apiKey = params.config?.apiKey || "hdbo1VK8NZQ5kMysnui5e3wOEDBTqWLFZgpEGQsM";
+
+    const response = await fetch(`${baseUrl}/checkout-v2`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         "Accept": "application/json",
-        "RT-UDDOKTAPAY-API-KEY": UDDOKTAPAY_API_KEY,
+        "RT-UDDOKTAPAY-API-KEY": apiKey,
       },
       body: JSON.stringify({
         full_name: params.fullName,
@@ -84,14 +91,17 @@ export async function createChargeClientSide(params: CreateChargeParams): Promis
 }
 
 // Client-side payment verification
-export async function verifyPaymentClientSide(invoiceId: string): Promise<VerifyPaymentResponse> {
+export async function verifyPaymentClientSide(invoiceId: string, config?: { apiBaseUrl: string; apiKey: string; }): Promise<VerifyPaymentResponse> {
   try {
-    const response = await fetch(`${UDDOKTAPAY_BASE_URL}/verify-payment`, {
+    const baseUrl = config?.apiBaseUrl || "https://vibeable.paymently.io/api";
+    const apiKey = config?.apiKey || "hdbo1VK8NZQ5kMysnui5e3wOEDBTqWLFZgpEGQsM";
+
+    const response = await fetch(`${baseUrl}/verify-payment`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         "Accept": "application/json",
-        "RT-UDDOKTAPAY-API-KEY": UDDOKTAPAY_API_KEY,
+        "RT-UDDOKTAPAY-API-KEY": apiKey,
       },
       body: JSON.stringify({
         invoice_id: invoiceId,

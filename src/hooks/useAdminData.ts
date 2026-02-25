@@ -281,6 +281,7 @@ export const useCreateBanner = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-banners"] });
+      queryClient.invalidateQueries({ queryKey: ["hero-banners-active"] });
       toast.success("ব্যানার যোগ হয়েছে");
     },
     onError: () => toast.error("যোগ করা যায়নি"),
@@ -296,6 +297,7 @@ export const useUpdateBanner = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-banners"] });
+      queryClient.invalidateQueries({ queryKey: ["hero-banners-active"] });
       toast.success("ব্যানার আপডেট হয়েছে");
     },
     onError: () => toast.error("আপডেট করা যায়নি"),
@@ -311,6 +313,7 @@ export const useDeleteBanner = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-banners"] });
+      queryClient.invalidateQueries({ queryKey: ["hero-banners-active"] });
       toast.success("ব্যানার মুছে ফেলা হয়েছে");
     },
     onError: () => toast.error("মুছে ফেলা যায়নি"),

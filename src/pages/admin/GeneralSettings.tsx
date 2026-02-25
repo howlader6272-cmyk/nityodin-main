@@ -25,6 +25,7 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "
 import { Slider } from "@/components/ui/slider";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface HelpLabelProps {
   id?: string;
@@ -65,6 +66,7 @@ interface HeroImage {
 }
 
 const AdminGeneralSettings = () => {
+  const queryClient = useQueryClient();
   const { data: siteConfig, isLoading } = useSiteConfig();
   const updateSiteConfig = useUpdateSiteConfig();
   const [form, setForm] = useState({
@@ -258,6 +260,7 @@ const AdminGeneralSettings = () => {
               : img,
           ),
         );
+        queryClient.invalidateQueries({ queryKey: ["hero-images-active"] });
         toast.success("হিরো ছবির crop আপডেট হয়েছে");
       }
 
@@ -295,6 +298,7 @@ const AdminGeneralSettings = () => {
       toast.error("স্ট্যাটাস আপডেট করা যায়নি");
       return;
     }
+    queryClient.invalidateQueries({ queryKey: ["hero-images-active"] });
     setHeroImages((prev) =>
       prev.map((img) => (img.id === id ? { ...img, is_active: isActive } : img)),
     );
@@ -313,6 +317,7 @@ const AdminGeneralSettings = () => {
         .eq("id", image.id);
       if (error) throw error;
 
+      queryClient.invalidateQueries({ queryKey: ["hero-images-active"] });
       setHeroImages((prev) => prev.filter((img) => img.id !== image.id));
       toast.success("ছবি ডিলিট হয়েছে");
     } catch (error) {
@@ -924,6 +929,7 @@ const AdminGeneralSettings = () => {
                                   .update({ title_bn: value || null })
                                   .eq("id", image.id);
                                 if (error) throw error;
+                                queryClient.invalidateQueries({ queryKey: ["hero-images-active"] });
                               } catch (error) {
                                 console.error(error);
                                 toast.error("Heading সংরক্ষণ করা যায়নি");
@@ -954,6 +960,7 @@ const AdminGeneralSettings = () => {
                                   .update({ subtitle_bn: value || null })
                                   .eq("id", image.id);
                                 if (error) throw error;
+                                queryClient.invalidateQueries({ queryKey: ["hero-images-active"] });
                               } catch (error) {
                                 console.error(error);
                                 toast.error("Sub-heading সংরক্ষণ করা যায়নি");
@@ -984,6 +991,7 @@ const AdminGeneralSettings = () => {
                                   .update({ cta_text: value || null })
                                   .eq("id", image.id);
                                 if (error) throw error;
+                                queryClient.invalidateQueries({ queryKey: ["hero-images-active"] });
                               } catch (error) {
                                 console.error(error);
                                 toast.error("CTA text সংরক্ষণ করা যায়নি");
@@ -1014,6 +1022,7 @@ const AdminGeneralSettings = () => {
                                   .update({ cta_link: value || null })
                                   .eq("id", image.id);
                                 if (error) throw error;
+                                queryClient.invalidateQueries({ queryKey: ["hero-images-active"] });
                               } catch (error) {
                                 console.error(error);
                                 toast.error("CTA link সংরক্ষণ করা যায়নি");

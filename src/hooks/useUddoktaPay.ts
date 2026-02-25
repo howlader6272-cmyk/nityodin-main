@@ -8,14 +8,39 @@ export function useUddoktaPay(mode: PaymentMode = "client") {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const getActiveGateway = async () => {
+    const { data, error: fetchError } = await supabase
+      .from("payment_gateways")
+      .select("*")
+      .eq("is_active", true)
+      .limit(1)
+      .maybeSingle();
+    
+    if (fetchError) {
+      console.error("Failed to fetch active payment gateway:", fetchError);
+      return null;
+    }
+    return data;
+  };
+
   const createCharge = async (params: CreateChargeParams) => {
     setIsLoading(true);
     setError(null);
 
     try {
+      const gateway = await getActiveGateway();
+      
+      const config = gateway ? {
+        apiBaseUrl: gateway.api_base_url,
+        apiKey: gateway.secret_key_encrypted || "",
+      } : undefined;
+
       if (mode === "client") {
         // Client-side API call
-        const result = await createChargeClientSide(params);
+        const result = await createChargeClientSide({
+          ...params,
+          config
+        });
         
         if (result.success && result.payment_url) {
           return { success: true, payment_url: result.payment_url };
@@ -29,6 +54,7 @@ export function useUddoktaPay(mode: PaymentMode = "client") {
           body: {
             action: "create-charge",
             ...params,
+            gatewayConfig: gateway // Pass the whole gateway config to edge function
           },
         });
 
@@ -58,9 +84,15 @@ export function useUddoktaPay(mode: PaymentMode = "client") {
     setError(null);
 
     try {
+      const gateway = await getActiveGateway();
+      const config = gateway ? {
+        apiBaseUrl: gateway.api_base_url,
+        apiKey: gateway.secret_key_encrypted || "",
+      } : undefined;
+
       if (mode === "client") {
         // Client-side verification
-        const result = await verifyPaymentClientSide(invoiceId);
+        const result = await verifyPaymentClientSide(invoiceId, config);
         return result;
       } else {
         // Server-side verification via Edge Function
@@ -68,6 +100,7 @@ export function useUddoktaPay(mode: PaymentMode = "client") {
           body: {
             action: "verify-payment",
             invoiceId,
+            gatewayConfig: gateway
           },
         });
 
