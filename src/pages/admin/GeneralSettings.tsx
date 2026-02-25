@@ -253,6 +253,22 @@ const AdminGeneralSettings = () => {
     await deleteHeroImage.mutateAsync(image);
   };
 
+  const handleHeroInputChange = (id: string, field: keyof HeroImage, value: any) => {
+    queryClient.setQueryData(["hero-images"], (prev: any) =>
+      prev?.map((img: any) => (img.id === id ? { ...img, [field]: value } : img)),
+    );
+  };
+
+  const handleHeroInputBlur = async (id: string, field: keyof HeroImage, value: any) => {
+    try {
+      await updateHeroImage.mutateAsync({ id, [field]: value || null });
+      toast.success("পরিবর্তন সংরক্ষণ করা হয়েছে");
+    } catch (error) {
+      console.error(error);
+      toast.error("সংরক্ষণ করা যায়নি");
+    }
+  };
+
   const getHeroPublicUrl = (path: string) => {
     const { data } = supabase.storage.from("site-assets").getPublicUrl(path);
     return data.publicUrl;
@@ -839,18 +855,8 @@ const AdminGeneralSettings = () => {
                           <Label className="text-xs">Heading</Label>
                           <Input
                             value={image.title_bn ?? ""}
-                            onChange={(e) => {
-                              const value = e.target.value;
-                              queryClient.setQueryData(["hero-images"], (prev: any) => 
-                                prev?.map((img: any) => img.id === image.id ? { ...img, title_bn: value } : img)
-                              );
-                            }}
-                            onBlur={async (e) => {
-                              const value = e.target.value;
-                              if (value === (image.title_bn ?? "")) return;
-                              await updateHeroImage.mutateAsync({ id: image.id, title_bn: value || null });
-                              toast.success("Heading সংরক্ষণ করা হয়েছে");
-                            }}
+                            onChange={(e) => handleHeroInputChange(image.id, "title_bn", e.target.value)}
+                            onBlur={(e) => handleHeroInputBlur(image.id, "title_bn", e.target.value)}
                             placeholder="বিশেষ ছাড় চলছে!"
                             className="h-7 text-xs"
                           />
@@ -859,18 +865,8 @@ const AdminGeneralSettings = () => {
                           <Label className="text-xs">Sub-heading</Label>
                           <Input
                             value={image.subtitle_bn ?? ""}
-                            onChange={(e) => {
-                              const value = e.target.value;
-                              queryClient.setQueryData(["hero-images"], (prev: any) => 
-                                prev?.map((img: any) => img.id === image.id ? { ...img, subtitle_bn: value } : img)
-                              );
-                            }}
-                            onBlur={async (e) => {
-                              const value = e.target.value;
-                              if (value === (image.subtitle_bn ?? "")) return;
-                              await updateHeroImage.mutateAsync({ id: image.id, subtitle_bn: value || null });
-                              toast.success("Sub-heading সংরক্ষণ করা হয়েছে");
-                            }}
+                            onChange={(e) => handleHeroInputChange(image.id, "subtitle_bn", e.target.value)}
+                            onBlur={(e) => handleHeroInputBlur(image.id, "subtitle_bn", e.target.value)}
                             placeholder="৩টি পণ্য কিনলে ৫% ছাড়..."
                             className="h-7 text-xs"
                           />
@@ -879,18 +875,8 @@ const AdminGeneralSettings = () => {
                           <Label className="text-xs">CTA Text</Label>
                           <Input
                             value={image.cta_text ?? ""}
-                            onChange={(e) => {
-                              const value = e.target.value;
-                              queryClient.setQueryData(["hero-images"], (prev: any) => 
-                                prev?.map((img: any) => img.id === image.id ? { ...img, cta_text: value } : img)
-                              );
-                            }}
-                            onBlur={async (e) => {
-                              const value = e.target.value;
-                              if (value === (image.cta_text ?? "")) return;
-                              await updateHeroImage.mutateAsync({ id: image.id, cta_text: value || null });
-                              toast.success("CTA Text সংরক্ষণ করা হয়েছে");
-                            }}
+                            onChange={(e) => handleHeroInputChange(image.id, "cta_text", e.target.value)}
+                            onBlur={(e) => handleHeroInputBlur(image.id, "cta_text", e.target.value)}
                             placeholder="যেমন: এখনই কিনুন"
                             className="h-7 text-xs"
                           />
@@ -899,18 +885,8 @@ const AdminGeneralSettings = () => {
                           <Label className="text-xs">CTA Link</Label>
                           <Input
                             value={image.cta_link ?? ""}
-                            onChange={(e) => {
-                              const value = e.target.value;
-                              queryClient.setQueryData(["hero-images"], (prev: any) => 
-                                prev?.map((img: any) => img.id === image.id ? { ...img, cta_link: value } : img)
-                              );
-                            }}
-                            onBlur={async (e) => {
-                              const value = e.target.value;
-                              if (value === (image.cta_link ?? "")) return;
-                              await updateHeroImage.mutateAsync({ id: image.id, cta_link: value || null });
-                              toast.success("CTA Link সংরক্ষণ করা হয়েছে");
-                            }}
+                            onChange={(e) => handleHeroInputChange(image.id, "cta_link", e.target.value)}
+                            onBlur={(e) => handleHeroInputBlur(image.id, "cta_link", e.target.value)}
                             placeholder="https://"
                             className="h-7 text-xs"
                           />
