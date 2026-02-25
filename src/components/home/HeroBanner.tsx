@@ -25,11 +25,12 @@ const HeroBanner = () => {
   const { data: heroImages } = useQuery({
     queryKey: ["hero-images-active"],
     queryFn: async () => {
+      console.log("Fetching active hero images for home...");
       const { data, error } = await supabase
         .from("hero_images")
         .select("*")
         .eq("is_active", true)
-        .order("created_at", { ascending: true });
+        .order("created_at", { ascending: false }); // Show newest first to match admin
       if (error) throw error;
       return data as {
         id: string;
@@ -43,6 +44,8 @@ const HeroBanner = () => {
         subtitle_bn: string | null;
       }[] | null;
     },
+    staleTime: 0, // Ensure we always get fresh data
+    refetchOnWindowFocus: true,
   });
 
   const { data: heroBanners } = useQuery({
@@ -63,6 +66,7 @@ const HeroBanner = () => {
     const title = siteConfig?.hero_title || "";
     const subtitle = siteConfig?.hero_subtitle || "";
     const link = siteConfig?.cta_link || "";
+    const globalCtaText = siteConfig?.cta_text || "এখনই কিনুন";
 
     const fromHeroImages: Banner[] =
       heroImages?.map((img) => {
@@ -76,7 +80,7 @@ const HeroBanner = () => {
           focus_x: img.focus_x,
           focus_y: img.focus_y,
           zoom: img.zoom,
-          cta_text: img.cta_text,
+          cta_text: img.cta_text || globalCtaText,
         };
       }) ?? [];
 
@@ -90,10 +94,12 @@ const HeroBanner = () => {
         focus_x: b.focus_x ?? 50,
         focus_y: b.focus_y ?? 50,
         zoom: b.zoom ?? 1,
-        cta_text: siteConfig?.cta_text ?? null,
+        cta_text: b.cta_text || globalCtaText,
       })) ?? [];
 
     const combined = [...fromHeroImages, ...fromHeroBanners];
+
+    console.log("Combined banners for display:", combined);
 
     if (combined.length > 0) {
       return combined;
@@ -110,7 +116,7 @@ const HeroBanner = () => {
         subtitle_bn: subtitle,
         image_url: siteConfig.hero_image_url,
         link_url: link,
-        cta_text: siteConfig.cta_text ?? null,
+        cta_text: globalCtaText,
       },
     ];
   }, [heroImages, heroBanners, siteConfig]);
