@@ -48,12 +48,15 @@ const OrderConfirmation = () => {
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
 
-  // Add # prefix if not present for database query
-  const orderNumberWithHash = orderNumber?.startsWith('#') ? orderNumber : `#${orderNumber}`;
+  // Decode order number from URL parameter
+  const decodedOrderNumber = orderNumber ? decodeURIComponent(orderNumber) : "";
+  const orderNumberWithHash = decodedOrderNumber.startsWith('#') ? decodedOrderNumber : `#${decodedOrderNumber}`;
 
   useEffect(() => {
     const fetchOrder = async () => {
-      if (!orderNumber) return;
+      if (!decodedOrderNumber) return;
+
+      console.log("Fetching order details for confirmation:", orderNumberWithHash);
 
       const { data, error } = await supabase
         .from("orders")
@@ -67,18 +70,22 @@ const OrderConfirmation = () => {
         .eq("order_number", orderNumberWithHash)
         .maybeSingle();
 
-      if (!error && data) {
+      if (error) {
+        console.error("Error fetching order details:", error);
+      }
+
+      if (data) {
         setOrder(data as OrderDetails);
       }
       setLoading(false);
     };
 
     fetchOrder();
-  }, [orderNumber]);
+  }, [decodedOrderNumber, orderNumberWithHash]);
 
   const copyOrderNumber = () => {
-    if (orderNumber) {
-      navigator.clipboard.writeText(orderNumber);
+    if (orderNumberWithHash) {
+      navigator.clipboard.writeText(orderNumberWithHash);
       setCopied(true);
       toast({ title: "কপি হয়েছে!", description: "অর্ডার নম্বর কপি করা হয়েছে" });
       setTimeout(() => setCopied(false), 2000);

@@ -346,7 +346,8 @@ const Checkout = () => {
         description: `অর্ডার নম্বর: ${order.order_number}`,
       });
 
-      navigate(`/order-confirmation/${order.order_number.replace('#', '')}`);
+      // Navigate with hash replaced only for the URL parameter
+      navigate(`/order-confirmation/${encodeURIComponent(order.order_number)}`);
     } catch (error) {
       console.error("Order error:", error);
       toast({
