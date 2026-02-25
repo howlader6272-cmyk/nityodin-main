@@ -155,7 +155,13 @@ const OrderConfirmation = () => {
                     variant="outline" 
                     size="sm"
                     className="gap-2"
-                    onClick={() => orderNumber && downloadInvoice(orderNumber)}
+                    onClick={() => {
+                      if (order?.order_number) {
+                        downloadInvoice(order.order_number);
+                      } else if (orderNumber) {
+                        downloadInvoice(orderNumber);
+                      }
+                    }}
                   >
                     <Download className="h-4 w-4" />
                     ইনভয়েস
