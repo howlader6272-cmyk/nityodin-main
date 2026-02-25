@@ -892,7 +892,6 @@ const AdminGeneralSettings = () => {
                             className="h-7 text-xs"
                           />
                         </div>
-                        </div>
                       </div>
                     </div>
                   ))}
